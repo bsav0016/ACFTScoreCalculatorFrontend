@@ -1,10 +1,51 @@
 {
   "expo": {
-    "name": "ACFTScoreCalculator",
-    "slug": "ACFTScoreCalculator",
-    "version": "1.0.0",
+    "name": "Updated ACFT Score Calculator",
+    "description": "Updated ACFT Score Calculator as of April 2022",
+    "slug": "UpdatedACFTScoreCalculator",
+    "version": "2.0.2",
+    "owner": "bsav0016",
     "assetBundlePatterns": [
       "**/*"
+    ],
+    "privacy": "public",
+    "icon": "./assets/icon.png",
+    "ios": {
+      "supportsTablet": true,
+      "config": {
+        "googleMobileAdsAppId": "ca-app-pub-3407478259803394~7728437270"
+      },
+      "appStoreUrl": "https://apps.apple.com/us/app/updated-acft-score-calculator/id1619926227",
+      "buildNumber": "31",
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you."
+      },
+      "bundleIdentifier": "org.name.ACFTScoreCalculator"
+    },
+    "android": {
+      "package": "org.name.UpdatedACFTScoreCalculator",
+      "config": {
+        "googleMobileAdsAppId": "ca-app-pub-3407478259803394~3789192261"
+      },
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=org.name.ACFTScoreCalculator",
+      "versionCode": 14
+    },
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "plugins": [
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "This identifier will be used to deliver personalized ads to you."
+        }
+      ]
     ]
+  },
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-3407478259803394~3789192261",
+    "ios_app_id": "ca-app-pub-3407478259803394~7728437270"
   }
 }

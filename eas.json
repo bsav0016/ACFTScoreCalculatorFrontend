@@ -1,0 +1,33 @@
+{
+  "cli": {
+    "version": ">= 0.50.0"
+  },
+  "build": {
+    "development": {
+      "distribution": "internal",
+      "android": {
+        "gradleCommand": ":app:assembleDebug",
+        "image": "latest"
+      },
+      "ios": {
+        "buildConfiguration": "Debug",
+        "cache": {
+          "key": "Anything"
+        }
+      }
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {}
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "bsav0016@gmail.com",
+        "ascAppId": "1619926227",
+        "appleTeamId": "X3Q98U56N3"
+      }
+    }
+  }
+}

@@ -1,21 +1,30 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import BasicCalculator from './components/basic_calculator';
+import Profile from './components/profile';
+import About from './components/about';
+import Auth from './components/auth';
+import Home from './components/home';
+import ACFTResults from './components/acft_results';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+import { createAppContainer } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation-stack';
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+/*import mobileAds from 'react-native-google-mobile-ads';
+
+mobileAds()
+  .initialize()
+  .then(adapterStatuses => {
+    // Initialization complete!
+  });*/
+
+const AppNavigator = createStackNavigator({
+  Home: {screen: Home},
+  BasicCalculator: {screen: BasicCalculator},
+  Auth: {screen: Auth},
+  Profile: {screen: Profile},
+  About: {screen: About},
+  ACFTResults: {screen: ACFTResults}
+})
+
+const App = createAppContainer(AppNavigator)
+
+export default App;
