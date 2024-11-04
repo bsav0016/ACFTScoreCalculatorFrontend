@@ -1,27 +1,32 @@
-import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
-import { View, Text } from 'react-native';
+import React from 'react';
+import { Platform } from 'react-native';
+import { debug } from './constants';
 
-const ACFTBannerAd = () => {
-  const unitID = Platform.select({
-    ios: "ca-app-pub-3407478259803394/2116145800",
-    android: "ca-app-pub-3407478259803394/2138582137",
-  });
+let ACFTBannerAd;
 
-  return (
-    <BannerAd
-      unitId={TestIds.BANNER}
-      //unitId={unitID}
-      size={BannerAdSize.FULL_BANNER}
-      requestOptions={{
-        requestNonPersonalizedAdsOnly: true,
-      }}
-    />
-  )
-  /*return (
-    <View style={{backgroundColor: '#5e3'}}>
-      <Text style={{color: '#b36'}}>Please Display</Text>
-    </View>
-  )*/
+if (debug) {
+  ACFTBannerAd = () => {
+    return <></>;
+  };
+} else {
+  const { BannerAd, BannerAdSize, TestIds } = require('react-native-google-mobile-ads');
+
+  ACFTBannerAd = () => {
+    const unitID = Platform.select({
+      ios: "ca-app-pub-3407478259803394/2116145800",
+      android: "ca-app-pub-3407478259803394/2138582137",
+    });
+
+    return (
+      <BannerAd
+        unitId={unitID}
+        size={BannerAdSize.FULL_BANNER}
+        requestOptions={{
+          requestNonPersonalizedAdsOnly: true,
+        }}
+      />
+    );
+  };
 }
- 
+
 export default ACFTBannerAd;
