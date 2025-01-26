@@ -3,7 +3,7 @@
     "name": "Updated ACFT Score Calculator",
     "description": "Updated ACFT Score Calculator as of April 2022",
     "slug": "UpdatedACFTScoreCalculator",
-    "version": "2.1.1",
+    "version": "2.1.2",
     "owner": "bsav0016",
     "assetBundlePatterns": [
       "**/*"
@@ -15,7 +15,7 @@
         "googleMobileAdsAppId": "ca-app-pub-3407478259803394~7728437270"
       },
       "appStoreUrl": "https://apps.apple.com/us/app/updated-acft-score-calculator/id1619926227",
-      "buildNumber": "32",
+      "buildNumber": "34",
       "infoPlist": {
         "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you."
       },
@@ -48,6 +48,10 @@
     "extra": {
       "eas": {
         "projectId": "408407da-8f59-48d4-9b52-e7ca21eb8c4c"
+      },
+      "react-native-google-mobile-ads": {
+        "android_app_id": "ca-app-pub-3407478259803394~3789192261",
+        "ios_app_id": "ca-app-pub-3407478259803394~7728437270"
       }
     }
   },

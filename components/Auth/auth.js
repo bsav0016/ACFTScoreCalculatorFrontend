@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Text, View, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
+import { Text, View, TextInput, TouchableOpacity, ActivityIndicator, SafeAreaView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { SafeAreaView } from "react-navigation";
 import ACFTBannerAd from '../ACFTBannerAd';
 import { backendUrl } from "../constants";
 import authStyles from './authStyles';

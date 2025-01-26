@@ -109,13 +109,13 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'org.name.UpdatedACFTScoreCalculator'
+    namespace "com.updatedacftscorecalculator"
     defaultConfig {
         applicationId 'org.name.UpdatedACFTScoreCalculator'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 15
-        versionName "2.1.1"
+        versionName "2.1.2"
     }
     signingConfigs {
         debug {

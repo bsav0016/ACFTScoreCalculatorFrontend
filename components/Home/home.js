@@ -1,5 +1,4 @@
-import { Text, View, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-navigation';
+import { Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import ACFTBannerAd from '../ACFTBannerAd';
 import AsyncStorage from "@react-native-async-storage/async-storage";
