@@ -21,12 +21,9 @@ export default function About() {
     <SafeAreaView style={{flex: 1, backgroundColor: 'black'}}>
        <View style={aboutStyles.container}>
         <Text style={aboutStyles.headerText}>Thank you for choosing my app!</Text>
-        <Text style={aboutStyles.bodyText}>If you have any feedback, comments, or suggestions 
-        please reach out to me at the email address below, and I will do my best to get back to you ASAP. 
-        This app is designed to make it easier for members of the Army to calculate their AFT scores
-        and track progress. As I mentioned in the "Profile" section, if you know me and would like your
-        fee waived for saving scores, please reach out to me directly. Good luck to all, and I hope
-        everyone can increase their scores!</Text>
+        <Text style={aboutStyles.bodyText}>
+          If you have any feedback, comments, or suggestions please reach out to me at the email below, and I will do my best to get back to you ASAP. 
+        </Text>
         <View style={aboutStyles.rowContainer}>
           <Text style={aboutStyles.bodyText}>Email: </Text>
           <TouchableOpacity onPress={() => openEmail()}>
