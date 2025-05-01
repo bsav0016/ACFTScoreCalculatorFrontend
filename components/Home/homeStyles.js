@@ -21,6 +21,13 @@ const homeStyles = StyleSheet.create({
         textTransform: 'uppercase',
         fontSize: 24,
         textAlign: 'center'
+    },
+    caoContainer: {
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    caoText: {
+        color: 'white'
     }
 });
 

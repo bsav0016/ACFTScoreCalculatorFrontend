@@ -9,19 +9,19 @@ export default function Home(props) {
   requestTrackingPermissionsAsync()
 
   const navigateLogin = () => {
-    props.navigation.navigate("Auth")
+    props.navigation.navigate("Auth");
   }
 
   const navigateProfile = () => {
-    props.navigation.navigate("Profile")
+    props.navigation.navigate("Profile");
   }
 
   const clickProfile = async () => {
     const token = await AsyncStorage.getItem('MR_token');
     if (token) {
-      navigateProfile()
+      navigateProfile();
     } else {
-      navigateLogin()
+      navigateLogin();
     }
   }
 
@@ -33,9 +33,14 @@ export default function Home(props) {
             <Text style={homeStyles.buttonText}>Calculate Score</Text>
           </View>
         </TouchableOpacity>
+        <TouchableOpacity onPress={() => props.navigation.navigate("BodyFatCalculator")}>
+          <View style={homeStyles.button}>
+            <Text style={homeStyles.buttonText}>Body Fat %</Text>
+          </View>
+        </TouchableOpacity>
         <TouchableOpacity onPress={clickProfile}>
           <View style={homeStyles.button}>
-            <Text style={homeStyles.buttonText}>Profile</Text>
+            <Text style={homeStyles.buttonText}>User Account</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => props.navigation.navigate("About")}>
@@ -43,6 +48,10 @@ export default function Home(props) {
             <Text style={homeStyles.buttonText}>About</Text>
           </View>
         </TouchableOpacity>
+        
+      </View>
+      <View style={homeStyles.caoContainer}>
+        <Text style={homeStyles.caoText}>Current as of 1 June 2025</Text>
       </View>
       <ACFTBannerAd/>
     </SafeAreaView>

@@ -98,7 +98,44 @@ const calculatorStyles = StyleSheet.create({
     inputContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
-    }
+    },
+    combatMOSContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        display: 'flex'
+    },
+    switchContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flex: 1
+    }, 
+    combatMOSText: {
+        flex: 1
+    },
+    noText: {
+        textAlign: 'right',
+        margin: 3
+    },
+    yesText: {
+        textAlign: 'left',
+        margin: 3
+    },
+    infoModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      infoModalContent: {
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: 20,
+        width: '80%',
+        alignItems: 'center',
+      },
 });
 
 export default calculatorStyles;

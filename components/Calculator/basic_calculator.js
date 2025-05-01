@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Image, Text, View, TextInput, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, TouchableOpacity, Modal, Alert, ScrollView } from 'react-native';
+import { Image, Text, View, TextInput, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, TouchableOpacity, Modal, Alert, ScrollView, Switch } from 'react-native';
 import ACFTBannerAd from "../ACFTBannerAd";
 import * as StoreReview from 'expo-store-review';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
@@ -8,7 +8,6 @@ import Dialog from 'react-native-dialog';
 import ReactNativeZoomableView from '@openspacelabs/react-native-zoomable-view/src/ReactNativeZoomableView';
 import { backendUrl } from '../constants';
 import calculatorStyles from './calculatorStyles';
-import ballThrowScores from './Scores/ballThrowScores';
 import deadliftScores from './Scores/deadliftScores';
 import plankScores from './Scores/plankScores';
 import pushupScores from './Scores/pushupScores';
@@ -42,14 +41,11 @@ const ModalPopup = ({visible, children}) => {
 }
 
 const BasicCalculator = (props) => {
-  const [age, setAge] = useState(0);
-  const [gender, setGender] = useState('');
+  const [isCombatMOS, setIsCombatMOS] = useState(false);
   const [deadlift, setDeadlift] = useState('');
   const [deadliftScore, setDeadliftScore] = useState(0);
   const [pushups, setPushups] = useState('');
   const [pushupScore, setPushupScore] = useState(0);
-  const [ballThrow, setBallThrow] = useState('');
-  const [ballThrowScore, setBallThrowScore] = useState(0);
   const [sdcMin, setSDCMin] = useState('');
   const [sdcSec, setSDCSec] = useState('');
   const [sdcScore, setSDCScore] = useState(0);
@@ -61,17 +57,16 @@ const BasicCalculator = (props) => {
   const [runScore, setRunScore] = useState(0);
   const [totalScore, setTotalScore] = useState(0);
 
-  const [visibleSave, setVisibleSave] = useState(false)
-  const [visibleDate, setVisibleDate] = useState(false)
+  const [visibleSave, setVisibleSave] = useState(false);
+  const [visibleDate, setVisibleDate] = useState(false);
+  const [infoModalVisible, setInfoModalVisible] = useState(false);
 
   const [month, setMonth] = useState(1);
   const [day, setDay] = useState(1);
   const [year, setYear] = useState(2024);
 
-  const ageRef = useRef();
   const deadliftRef = useRef();
   const pushupRef = useRef();
-  const ballThrowRef = useRef();
   const sdcMinRef = useRef();
   const sdcSecRef = useRef();
   const plankMinRef = useRef();
@@ -105,6 +100,12 @@ const BasicCalculator = (props) => {
       () => setKeyboardOpen(false)
     );
 
+    if (Math.random() < 0.03) {
+      if (StoreReview.hasAction()) {
+        StoreReview.requestReview()
+      }
+    }
+
     return () => {
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
@@ -112,7 +113,7 @@ const BasicCalculator = (props) => {
   }, []);
 
   useEffect(() => {
-    const newTotalScore = deadliftScore + pushupScore + ballThrowScore + sdcScore + plankScore + runScore
+    const newTotalScore = deadliftScore + pushupScore + sdcScore + plankScore + runScore
     setTotalScore(newTotalScore);
     if (totalScore > 0) {
       setVisibleSave(true)
@@ -120,38 +121,7 @@ const BasicCalculator = (props) => {
     else {
       setVisibleSave(false)
     }
-  }, [deadliftScore, ballThrowScore, pushupScore, sdcScore, plankScore, runScore])
-
-  useEffect(() => {
-    if (gender === '' || gender === null) {
-      setGender('');
-    }
-    else if (gender !== 'M' && gender !== 'm' && gender !== 'f' && gender !== 'F') {
-      alert("Gender must be set to M or F");
-      setGender('');
-    }
-    else {
-      ageRef.current.focus()
-    }
-    if (Math.random() < 0.03) {
-      if (StoreReview.hasAction()) {
-        StoreReview.requestReview()
-      }
-    }
-  }, [gender])
-
-  useEffect(() => {
-    if (age === '' || age === null) {
-      setAge(0);
-    }
-    else if (isNaN(Number(age)) || age < 0) {
-      alert("Age must be a non-negative number");
-      setAge(0);
-    }
-    else if (age.toString().length == 2) {
-      deadliftRef.current.focus()
-    }
-  }, [age])
+  }, [deadliftScore, pushupScore, sdcScore, plankScore, runScore])
 
   useEffect(() => {
     if (deadlift === '') {
@@ -166,31 +136,10 @@ const BasicCalculator = (props) => {
       const newDeadliftScore = calculateEventScore(deadlift, true, deadliftScores);
       setDeadliftScore(newDeadliftScore);
       if (deadlift.toString().length == 3) {
-        ballThrowRef.current.focus()
+        pushupRef.current.focus()
       }
     }
-  }, [deadlift, gender, age])
-
-  useEffect(() => {
-    if (ballThrow === '') {
-      setBallThrowScore(0);
-    }
-    else if (isNaN(ballThrow)) {
-      setBallThrow('');
-      setBallThrowScore(0);
-      alert("Please enter a number for ball throw");
-    }
-    else {
-      const newBallThrowScore = calculateEventScore(ballThrow, true, ballThrowScores);
-      setBallThrowScore(newBallThrowScore);
-      const splitBallThrow = ballThrow.toString().split('.')
-      if (splitBallThrow.length == 2) {
-        if (splitBallThrow[1].length == 1) {
-          pushupRef.current.focus()
-        }
-      }
-    }
-  }, [ballThrow, gender, age])
+  }, [deadlift, isCombatMOS])
 
   useEffect(() => {
     if (pushups === '') {
@@ -208,7 +157,7 @@ const BasicCalculator = (props) => {
         sdcMinRef.current.focus()
       }
     }
-  }, [pushups, gender, age])
+  }, [pushups, isCombatMOS])
 
   useEffect(() => {
     if (sdcMin === '') {
@@ -225,7 +174,7 @@ const BasicCalculator = (props) => {
       setSDCScore(newSDCScore);
       sdcSecRef.current.focus()
     }
-  }, [sdcMin, gender, age])
+  }, [sdcMin, isCombatMOS])
 
   useEffect(() => {
     if (sdcSec === '') {
@@ -244,7 +193,7 @@ const BasicCalculator = (props) => {
         plankMinRef.current.focus();
       }
     }
-  }, [sdcSec, gender, age])
+  }, [sdcSec, isCombatMOS])
 
   useEffect(() => {
     if (plankMin === '') {
@@ -260,7 +209,7 @@ const BasicCalculator = (props) => {
       setPlankScore(newPlankScore);
       plankSecRef.current.focus()
     }
-  }, [plankMin, gender, age])
+  }, [plankMin, isCombatMOS])
 
   useEffect(() => {
     if (plankSec === '') {
@@ -275,10 +224,10 @@ const BasicCalculator = (props) => {
       const newPlankScore = calculateEventScore(timeFormat(plankMin, plankSec), true, plankScores);
       setPlankScore(newPlankScore);
       if (plankSec.toString().length == 2) {
-        runMinRef.current.focus()
+        runMinRef.current.focus();
       }
     }
-  }, [plankSec, gender, age])
+  }, [plankSec, isCombatMOS])
 
   useEffect(() => {
     if (runMin === '') {
@@ -293,10 +242,10 @@ const BasicCalculator = (props) => {
       const newRunScore = calculateEventScore(timeFormat(runMin, runSec), false, runScores);
       setRunScore(newRunScore);
       if (runMin.toString().length == 2) {
-        runSecRef.current.focus()
+        runSecRef.current.focus();
       }
     }
-  }, [runMin, gender, age])
+  }, [runMin, isCombatMOS])
 
   useEffect(() => {
     if (runSec === '') {
@@ -311,28 +260,28 @@ const BasicCalculator = (props) => {
       const newRunScore = calculateEventScore(timeFormat(runMin, runSec), false, runScores);
       setRunScore(newRunScore);
       if (runSec.toString().length == 2) {
-        runSecRef.current.blur()
+        runSecRef.current.blur();
       }
     }
-  }, [runSec, gender, age])
+  }, [runSec, isCombatMOS])
 
   const getToken = async () => {
     const token = await AsyncStorage.getItem('MR_token');
-    return token
+    return token;
   };
 
   const getId = async () => {
-    id = await AsyncStorage.getItem('user_id')
-    return id
+    id = await AsyncStorage.getItem('user_id');
+    return id;
   };
 
   const verifyLoggedIn = async () => {
-    const id = await getId()
+    const id = await getId();
     if (id === null) {
-      askToLogin()
+      askToLogin();
     }
     else{
-      setVisibleDate(true)
+      setVisibleDate(true);
     }
   }
 
@@ -370,12 +319,8 @@ const BasicCalculator = (props) => {
       month: month,
       day: day,
       year: year,
-      gender: gender,
-      age: age,
       deadlift_raw: deadlift,
       deadlift_score: deadliftScore,
-      spt_raw: ballThrow,
-      spt_score: ballThrowScore, 
       pushups_raw: pushups, 
       pushups_score: pushupScore,
       sdc_raw: sdcMin * 60 + sdcSec, 
@@ -385,9 +330,9 @@ const BasicCalculator = (props) => {
       tmr_raw: runMin * 60 + runSec, 
       tmr_score: runScore, 
       total_score: totalScore
-    }
-    saveToDatabase(data)
-    setVisibleDate(false)
+    };
+    saveToDatabase(data);
+    setVisibleDate(false);
   }
 
   const saveToDatabase = async (data) => {
@@ -415,12 +360,12 @@ const BasicCalculator = (props) => {
   }
   
   const timeFormat = (minutes, seconds) => {
-    formattedTime = parseFloat(minutes) + seconds / 60.0
+    const formattedTime = parseFloat(minutes) + seconds / 60.0
     return formattedTime
   }
   
   const calculateEventScore = (input, above, scoresArray) => {
-    const ageGroups = [
+    /*const ageGroups = [
       { maxAge: 22, maleIndex: 1, femaleIndex: 2 },
       { maxAge: 27, maleIndex: 3, femaleIndex: 4 },
       { maxAge: 32, maleIndex: 5, femaleIndex: 6 },
@@ -445,36 +390,35 @@ const BasicCalculator = (props) => {
           }
         }
       }
-    }
+    }*/
     return 0;
   }
 
   const clearScore = () => {
-    setGender('')
-    setAge('')
-    setDeadlift('')
-    setBallThrow('')
-    setPushups('')
-    setSDCMin('')
-    setSDCSec('')
-    setPlankMin('')
-    setPlankSec('')
-    setRunMin('')
-    setRunSec('')
+    setDeadlift('');
+    setPushups('');
+    setSDCMin('');
+    setSDCSec('');
+    setPlankMin('');
+    setPlankSec('');
+    setRunMin('');
+    setRunSec('');
+  }
+
+  const changeIsCombatMOS = () => {
+    if (isCombatMOS) {
+      setIsCombatMOS(false);
+    } else {
+      setIsCombatMOS(true);
+    }
   }
 
   const fields = [
     { 
-      key: 'deadlift', text: 'Deadlift       ', value: deadlift, ref: deadliftRef, ph: '(in lbs)', 
-      onCT: setDeadlift, onSE: () => ballThrowRef.current.focus(), bos: false, visible: visible1, 
+      key: 'deadlift', text: 'Deadlift', value: deadlift, ref: deadliftRef, ph: '(in lbs)', 
+      onCT: setDeadlift, onSE: () => pushupRef.current.focus(), bos: false, visible: visible1, 
       onPress: (isVisible) => {setVisible1(isVisible)}, imagePath: require('../../assets/DeadliftScores.png'), 
       imageStyle: calculatorStyles.deadliftScoresImage, score: deadliftScore
-    },
-    {
-      key: 'ballThrow', text: 'Ball Throw  ', value: ballThrow, ref: ballThrowRef, ph: 'e.g. 11.4',
-      onCT: setBallThrow, onSE: () => pushupRef.current.focus(), bos: false, visible: visible2,
-      onPress: (isVisible) => {setVisible2(isVisible)}, imagePath: require('../../assets/BallThrowScores.png'),
-      imageStyle: calculatorStyles.ballThrowScoresImage, score: ballThrowScore
     },
     {
       key: 'pushups', text: 'T-Push Ups', value: pushups, ref: pushupRef, ph: '0-99',
@@ -533,32 +477,37 @@ const BasicCalculator = (props) => {
               <Dialog.Button label="Cancel" onPress={() => setVisibleDate(false)} />
               <Dialog.Button label="Confirm" onPress={saveScore} />
             </Dialog.Container>
-
-            <Text>Gender:</Text>
-            <TextInput
-              key='gender'
-              value={gender}
-              returnKeyType='next'
-              style={calculatorStyles.input}
-              placeholderTextColor="gray"
-              placeholder="M or F"
-              onChangeText={setGender}
-              onSubmitEditing={() => ageRef.current.focus()}
-              blurOnSubmit={false}/>
-            <Text>     Age:</Text>
-            <TextInput
-              key='age'
-              value={age}
-              keyboardType="numeric"
-              returnKeyType='done'
-              ref={ageRef}
-              style={calculatorStyles.input}
-              placeholderTextColor="gray"
-              placeholder="0-99"
-              onChangeText={setAge}
-              onSubmitEditing={() => deadliftRef.current.focus()}
-              blurOnSubmit={false}/>
           </View>
+
+          <View style={calculatorStyles.combatMOSContainer}>
+            <TouchableOpacity onPress={() => setInfoModalVisible(true)}>
+              <Text>ℹ️</Text>
+            </TouchableOpacity>
+            <Text style={calculatorStyles.combatMOSText}>Combat MOS?</Text>
+            <View style={calculatorStyles.switchContainer}>
+              <Text style={calculatorStyles.noText}>No</Text>
+              <Switch
+                onValueChange={changeIsCombatMOS}
+                value={isCombatMOS}
+              />
+              <Text style={calculatorStyles.yesText}>Yes</Text>
+            </View>
+          </View>
+
+          <Modal
+            transparent={true}
+            visible={infoModalVisible}
+            onRequestClose={() => setInfoModalVisible(false)}
+          >
+            <View style={calculatorStyles.infoModalOverlay}>
+              <View style={calculatorStyles.infoModalContent}>
+                <Text>This is your modal content.</Text>
+                <TouchableOpacity style={calculatorStyles.button} onPress={() => setInfoModalVisible(false)}>
+                  <Text style={calculatorStyles.buttonText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>          
 
           {fields.map(field => (
             <View style={[calculatorStyles.container, {marginTop: keyboardOpen ? 10 : 25}]} key={field.key}>

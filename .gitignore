@@ -94,3 +94,6 @@ yarn-error.*
 *.tsbuildinfo
 
 # @end expo-cli
+
+venv
+/venv

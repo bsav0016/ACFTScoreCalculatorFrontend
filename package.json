@@ -18,7 +18,7 @@
     "anonymous-files": "^1.0.1",
     "eas": "^0.1.0",
     "eas-cli": "^12.6.2",
-    "expo": "^51.0.38",
+    "expo": "^52.0.0",
     "expo-constants": "^16.0.2",
     "expo-dev-client": "~4.0.28",
     "expo-image-picker": "~15.0.7",

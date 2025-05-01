@@ -6,11 +6,13 @@ import Home from './components/Home/home';
 import ACFTResults from './components/AcftResults/acft_results';
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
+import BodyFatCalculator from './components/BodyFatCalculator/bodyFatCalculator';
 
 
 const AppNavigator = createStackNavigator({
   Home: {screen: Home},
   BasicCalculator: {screen: BasicCalculator},
+  BodyFatCalculator: {screen: BodyFatCalculator},
   Auth: {screen: Auth},
   Profile: {screen: Profile},
   About: {screen: About},
