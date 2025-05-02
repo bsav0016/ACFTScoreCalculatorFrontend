@@ -10,20 +10,20 @@ def createReadableCalculations(raw_calculations):
         row = rows[i]
         columns = row.split()
         new_columns = []
-        i = 1
-        while i < len(columns):
-            if columns[i] == "<" or columns[i] == ">":
-                new_column = columns[i] + columns[i + 1]
+        j = 1
+        while j < len(columns):
+            if columns[j] == "<" or columns[j] == ">":
+                new_column = columns[j] + columns[j + 1]
                 new_columns.append(new_column)
-                i += 2
+                j += 2
             else:
-                new_columns.append(columns[i])
-                i += 1
+                new_columns.append(columns[j])
+                j += 1
         print(f"{columns[0]}: {{")
-        for i in range(int(len(new_columns) / cols_per_row)):
+        for j in range(int(len(new_columns) / cols_per_row)):
             print_str = "\t"
-            for j in range(cols_per_row):
-                index = i * cols_per_row + j
+            for k in range(cols_per_row):
+                index = j * cols_per_row + k
                 print_str += f"{waist_sizes[index]}"
                 print_str += ": "
                 print_str += f"'{new_columns[index]}'"

@@ -8,8 +8,11 @@ const calculatorStyles = StyleSheet.create({
         marginTop: 25
     },
     container1: {
-        backgroundColor: '#fff',
+        backgroundColor: '#000',
         alignItems: 'center'
+    },
+    fieldText: {
+        color: 'white'
     },
     input: {
         borderWidth: 1,
@@ -20,6 +23,7 @@ const calculatorStyles = StyleSheet.create({
         margin: 3,
         width: 70,
         fontSize: 14,
+        color: 'white'
     },
     button: {
         justifyContent: 'center',
@@ -32,7 +36,7 @@ const calculatorStyles = StyleSheet.create({
     },
     buttonText: {
         fontSize: 14,
-        color: '#00f',
+        color: '#39f',
         textDecorationLine: 'underline'
     },
     modalBackground: {
@@ -70,11 +74,6 @@ const calculatorStyles = StyleSheet.create({
         height: undefined,
         aspectRatio: 1170/1277
     },
-    ballThrowScoresImage: {
-        width: '100%',
-        height: undefined,
-        aspectRatio: 1171/1128,
-    },
     pushUpScoresImage: {
         width: '100%',
         height: undefined,
@@ -95,6 +94,36 @@ const calculatorStyles = StyleSheet.create({
         height: undefined,
         aspectRatio: 1170/1124
     },
+    aftAlternateEventsImage: {
+        width: '100%',
+        height: undefined,
+        aspectRatio: 1360/553
+    },
+    aftDeadliftScoresImage: {
+        width: '100%',
+        height: undefined,
+        aspectRatio: 624/666
+    },
+    aftPushUpScoresImage: {
+        width: '100%',
+        height: undefined,
+        aspectRatio: 624/674
+    },
+    aftSdcScoresImage: {
+        width: '100%',
+        height: undefined,
+        aspectRatio: 624/584
+    },
+    aftPlankScoresImage: {
+        width: '100%',
+        height: undefined,
+        aspectRatio: 624/596
+    },
+    aftMRScoresImage: {
+        width: '100%',
+        height: undefined,
+        aspectRatio: 694/595
+    },
     inputContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
@@ -113,15 +142,20 @@ const calculatorStyles = StyleSheet.create({
         flex: 1
     }, 
     combatMOSText: {
-        flex: 1
+        flex: 1,
+        color: 'white',
+        textAlign: 'center',
+        marginLeft: 3
     },
     noText: {
         textAlign: 'right',
-        margin: 3
+        margin: 3,
+        color: 'white'
     },
     yesText: {
         textAlign: 'left',
-        margin: 3
+        margin: 3,
+        color: 'white'
     },
     infoModalOverlay: {
         flex: 1,
@@ -136,6 +170,9 @@ const calculatorStyles = StyleSheet.create({
         width: '80%',
         alignItems: 'center',
       },
+      scoreText: {
+        color: 'white'
+      }
 });
 
 export default calculatorStyles;

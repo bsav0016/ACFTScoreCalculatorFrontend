@@ -1,5 +1,4 @@
-import { Text, View, SafeAreaView, Linking } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { Text, View, SafeAreaView, Linking, TouchableOpacity } from 'react-native';
 import ACFTBannerAd from '../ACFTBannerAd';
 import aboutStyles from './aboutStyles';
 

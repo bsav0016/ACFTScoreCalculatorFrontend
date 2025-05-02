@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "Updated ACFT Score Calculator",
-    "description": "Updated ACFT Score Calculator as of April 2022",
+    "name": "AFT Score Calculator",
+    "description": "Updated AFT Score Calculator current as of 1 May 2025",
     "slug": "UpdatedACFTScoreCalculator",
-    "version": "2.1.2",
+    "version": "3.0",
     "owner": "bsav0016",
     "assetBundlePatterns": [
       "**/*"
@@ -15,7 +15,7 @@
         "googleMobileAdsAppId": "ca-app-pub-3407478259803394~7728437270"
       },
       "appStoreUrl": "https://apps.apple.com/us/app/updated-acft-score-calculator/id1619926227",
-      "buildNumber": "34",
+      "buildNumber": "35",
       "infoPlist": {
         "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you."
       },

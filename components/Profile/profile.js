@@ -75,13 +75,13 @@ export default function Profile(props) {
   }
 
   const removeStorage = async () => {
-    await AsyncStorage.removeItem('MR_token')
-    await AsyncStorage.removeItem('user_id')
+    await AsyncStorage.removeItem('MR_token');
+    await AsyncStorage.removeItem('user_id');
   }
 
-  const signOut = () => {
-    removeStorage()
-    props.navigation.navigate("Auth")
+  const signOut = async () => {
+    await removeStorage();
+    props.navigation.navigate("Auth");
   }
 
   const showConfirmDialog = () => {
@@ -110,10 +110,9 @@ export default function Profile(props) {
         'Authorization': `Token ${token}`
       }
     })
-    .then( () => removeStorage())
-    .then( () => {
-      props.navigation.navigate("Auth")
-      alert("Deleted account") 
+    .then( async res => {
+      await signOut();
+      alert("Deleted account");
     })
     .catch( error => alert(error))
   }

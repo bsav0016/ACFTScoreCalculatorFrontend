@@ -1,7 +1,6 @@
-import { Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
+import { Text, View, TouchableOpacity, SafeAreaView, FlatList } from 'react-native';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FlatList } from 'react-navigation';
 import Dialog from 'react-native-dialog';
 import ACFTBannerAd from '../ACFTBannerAd';
 import { backendUrl } from '../constants';

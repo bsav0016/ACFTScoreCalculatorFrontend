@@ -42,9 +42,9 @@ export default function Auth(props) {
                 props.navigation.navigate("Profile")
             }
             else {
-                alert("Incorrect username or password")
+                alert("Incorrect username or password");
             }
-            setLoading(false)
+            setLoading(false);
         })
         .catch( () => {
             error => console.log(error)
@@ -57,50 +57,50 @@ export default function Auth(props) {
             let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
             let tempEmail = email.replace(/\s+/g, '')
             if (username === '') {
-                alert("Username field must not be blank")
-                return
+                alert("Username field must not be blank");
+                return;
             }
             else if (username.length > 30) {
-                alert("Username field must not be more than 30 characters")
-                return
+                alert("Username field must not be more than 30 characters");
+                return;
             }
             else if (password.length < 6) {
-                alert("Password must be at least 6 characters long. It is recommended you mix letters, digits, and special characters.")
-                return
+                alert("Password must be at least 6 characters long. It is recommended you mix letters, digits, and special characters.");
+                return;
             }
             else if (password.length > 30) {
-                alert("Password must be no more than 30 characters.")
-                return
+                alert("Password must be no more than 30 characters.");
+                return;
             }
             else if (confirmPassword !== password) {
-                alert("Passwords must match")
-                return
+                alert("Passwords must match");
+                return;
             }
             else if (reg.test(tempEmail) === false) {
-                alert("Must be valid email address")
-                return
+                alert("Must be valid email address");
+                return;
             }
             else if (tempEmail.length > 50) {
-                alert("Email must not be more than 50 characters")
-                return
+                alert("Email must not be more than 50 characters");
+                return;
             }
             else if (firstName === '') {
-                alert("First Name must not be blank")
-                return
+                alert("First Name must not be blank");
+                return;
             }
             else if (firstName.length > 30) {
-                alert("First Name must not be more than 30 characters")
-                return
+                alert("First Name must not be more than 30 characters");
+                return;
             }
             else if (lastName === '') {
-                alert("Last Name must not be blank")
-                return
+                alert("Last Name must not be blank");
+                return;
             }
             else if (lastName.length > 30) {
-                alert("Last Name must not be more than 30 characters")
-                return
+                alert("Last Name must not be more than 30 characters");
+                return;
             }
-            setLoading(true)
+            setLoading(true);
             await fetch(`${backendUrl}api/users/`, {
                 method: 'POST',
                 headers: {
@@ -109,8 +109,24 @@ export default function Auth(props) {
                 body: JSON.stringify({ username: username, password: password, first_name: firstName,
                     last_name: lastName, email: tempEmail })
             })
-            .then( res => res.json() )
-            .then( res => {
+            .then( async res => {
+                const data = await res.json()
+                if (!res.ok) {
+                    console.log("Error response: ", data);
+                    console.log(data.email)
+                    if (data.email && data.email[0].includes("user with this Email")) {
+                        alert('Email already taken')
+                    } else if (data.username && data.username[0].includes("user with this Username")) {
+                        alert('Username already taken')
+                    } else {
+                        alert("Unknown error")
+                    }
+                    throw new Error("API error");
+                } 
+                return data
+            })
+            .then( async res => {
+                console.log(res);
                 let usernameField = res.username
                 let emailField = res.email
                 if (emailField === undefined) {
@@ -120,14 +136,14 @@ export default function Auth(props) {
                     usernameField = ["It's fine"]
                 }
                 if (emailField.includes("user with this Email already exists.")){
-                    alert("Email is already in use")
-                    setLoading(false)
-                    return
+                    alert("Email is already in use");
+                    setLoading(false);
+                    return;
                 }
                 else if (usernameField.includes("user with this Username already exists.")) {
-                    alert("Username already in use")
-                    setLoading(false)
-                    return
+                    alert("Username already in use");
+                    setLoading(false);
+                    return;
                 }
                 else if (res.id === undefined) {
                     console.log(res)
@@ -136,17 +152,17 @@ export default function Auth(props) {
                     return
                 }
                 else {
-                    login()
+                    await login();
                 }
-                setLoading(false)
+                setLoading(false);
             })
-            .catch( () => {
-                error => console.log(error)
-                setLoading(false)
+            .catch(error => {
+                console.log(error);
+                setLoading(false);
             })
         }
         else {
-            login()
+            await login();
         }
     }
 
@@ -179,7 +195,6 @@ export default function Auth(props) {
                     autoCapitalize={'none'}
                     returnKeyType={'next'}
                     onSubmitEditing={() => passwordInput.current.focus()}
-                    blurOnSubmit={false}
                 />
                 {!regView ? <Text style={authStyles.label}>Password</Text> : <View/>}
                 <TextInput
@@ -191,7 +206,6 @@ export default function Auth(props) {
                     autoCapitalize={'none'}
                     secureTextEntry={true}
                     ref={passwordInput}
-                    blurOnSubmit={regView ? false : true}
                     onSubmitEditing={regView ? () => passwordInput2.current.focus() : () => {}}
                 />
                 {regView &&
@@ -206,7 +220,6 @@ export default function Auth(props) {
                         secureTextEntry={true}
                         ref={passwordInput2}
                         onSubmitEditing={() => emailInput.current.focus()}
-                        blurOnSubmit={false}
                     />
                     <TextInput
                         style={authStyles.input}
@@ -218,7 +231,6 @@ export default function Auth(props) {
                         keyboardType={'email-address'}
                         ref={emailInput}
                         onSubmitEditing={() => firstNameInput.current.focus()}
-                        blurOnSubmit={false}
                     />
                     <TextInput
                         style={authStyles.input}
@@ -228,7 +240,6 @@ export default function Auth(props) {
                         value={firstName}
                         ref={firstNameInput}
                         onSubmitEditing={() => lastNameInput.current.focus()}
-                        blurOnSubmit={false}
                     />
                     <TextInput
                         style={authStyles.input}
@@ -258,16 +269,3 @@ export default function Auth(props) {
         </SafeAreaView>
     )
 }
-
-Auth.navigationOptions = screenProps => ({
-    title: "Login",
-    headerStyle: {
-        backgroundColor: '#FEC029'
-    },
-    headerTintColor: '#000',
-    headerTitleStyle: {
-        fontWeight: 'bold',
-        fontSize: 24,
-        color: '#000'
-    }
-})

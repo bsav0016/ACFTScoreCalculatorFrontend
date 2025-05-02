@@ -5,7 +5,7 @@ module.exports = function(api) {
       'babel-preset-expo'
     ],
     plugins: [
-      'babel-plugin-syntax-hermes-parser'
+      'react-native-reanimated/plugin'
     ]
   };
 };

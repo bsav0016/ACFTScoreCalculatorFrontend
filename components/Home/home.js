@@ -28,14 +28,19 @@ export default function Home(props) {
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'black'}}>
       <View style={homeStyles.container}>
-        <TouchableOpacity onPress={() => props.navigation.navigate("BasicCalculator")}>
+        <TouchableOpacity onPress={() => props.navigation.navigate("AFTCalculator")}>
           <View style={homeStyles.button}>
-            <Text style={homeStyles.buttonText}>Calculate Score</Text>
+            <Text style={homeStyles.buttonText}>AFT Calculator</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => props.navigation.navigate("ACFTCalculator")}>
+          <View style={homeStyles.button}>
+            <Text style={homeStyles.buttonText}>ACFT Calculator</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => props.navigation.navigate("BodyFatCalculator")}>
           <View style={homeStyles.button}>
-            <Text style={homeStyles.buttonText}>Body Fat %</Text>
+            <Text style={homeStyles.buttonText}>H/W & Body Fat %</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={clickProfile}>
@@ -51,7 +56,7 @@ export default function Home(props) {
         
       </View>
       <View style={homeStyles.caoContainer}>
-        <Text style={homeStyles.caoText}>Current as of 1 June 2025</Text>
+        <Text style={homeStyles.caoText}>Current as of 1 May 2025</Text>
       </View>
       <ACFTBannerAd/>
     </SafeAreaView>

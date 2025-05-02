@@ -8,11 +8,11 @@ import Dialog from 'react-native-dialog';
 import ReactNativeZoomableView from '@openspacelabs/react-native-zoomable-view/src/ReactNativeZoomableView';
 import { backendUrl } from '../constants';
 import calculatorStyles from './calculatorStyles';
-import deadliftScores from './Scores/deadliftScores';
-import plankScores from './Scores/plankScores';
-import pushupScores from './Scores/pushupScores';
-import runScores from './Scores/runScores';
-import SDCScores from './Scores/SDCScores';
+import aftDeadliftScores from './AFTScores/deadliftScores';
+import aftPushupScores from './AFTScores/pushupScores';
+import aftPlankScores from './AFTScores/plankScores';
+import aftSDCScores from './AFTScores/SDCScores';
+import aftRunScores from './AFTScores/runScores';
 
 
 const ModalPopup = ({visible, children}) => {
@@ -31,17 +31,20 @@ const ModalPopup = ({visible, children}) => {
     }
   }
 
-  return <Modal transparent visible={showModal}>
-    <View style={calculatorStyles.modalBackground}>
-      <View style= {[calculatorStyles.modalContainer]}>
-        {children}
+  return (
+    <Modal transparent visible={showModal}>
+      <View style={calculatorStyles.modalBackground}>
+        <View style= {[calculatorStyles.modalContainer]}>
+          {children}
+        </View>
       </View>
-    </View>
-  </Modal>
+    </Modal>
+  )
 }
 
-const BasicCalculator = (props) => {
-  const [isCombatMOS, setIsCombatMOS] = useState(false);
+const AFTCalculator = (props) => {
+  const [isCombatMOS, setIsCombatMOS] = useState(true);
+  const [ageText, setAgeText] = useState('');
   const [deadlift, setDeadlift] = useState('');
   const [deadliftScore, setDeadliftScore] = useState(0);
   const [pushups, setPushups] = useState('');
@@ -76,7 +79,6 @@ const BasicCalculator = (props) => {
 
   const [visible,setVisible] = React.useState(false)
   const [visible1,setVisible1] = React.useState(false)
-  const [visible2,setVisible2] = React.useState(false)
   const [visible3,setVisible3] = React.useState(false)
   const [visible4,setVisible4] = React.useState(false)
   const [visible5,setVisible5] = React.useState(false)
@@ -100,7 +102,7 @@ const BasicCalculator = (props) => {
       () => setKeyboardOpen(false)
     );
 
-    if (Math.random() < 0.03) {
+    if (Math.random() < 0.1) {
       if (StoreReview.hasAction()) {
         StoreReview.requestReview()
       }
@@ -111,6 +113,12 @@ const BasicCalculator = (props) => {
       keyboardDidHideListener.remove();
     };
   }, []);
+
+  useEffect(() => {
+    if (ageText.length > 1) {
+      deadliftRef.current.focus();
+    }
+  }, [ageText])
 
   useEffect(() => {
     const newTotalScore = deadliftScore + pushupScore + sdcScore + plankScore + runScore
@@ -133,7 +141,7 @@ const BasicCalculator = (props) => {
       alert("Please enter a number for deadlift");
     }
     else {
-      const newDeadliftScore = calculateEventScore(deadlift, true, deadliftScores);
+      const newDeadliftScore = calculateEventScore(deadlift, true, aftDeadliftScores);
       setDeadliftScore(newDeadliftScore);
       if (deadlift.toString().length == 3) {
         pushupRef.current.focus()
@@ -151,7 +159,7 @@ const BasicCalculator = (props) => {
       alert("Please enter a number for push ups");
     }
     else {
-      const newPushupScore = calculateEventScore(pushups, true, pushupScores);
+      const newPushupScore = calculateEventScore(pushups, true, aftPushupScores);
       setPushupScore(newPushupScore);
       if (pushups.toString().length == 2) {
         sdcMinRef.current.focus()
@@ -169,8 +177,8 @@ const BasicCalculator = (props) => {
       alert("Please enter a number");
     }
     else {
-      sdcTime = timeFormat(sdcMin, sdcSec)
-      const newSDCScore = calculateEventScore(sdcTime, false, SDCScores)
+      const sdcTime = timeFormat(sdcMin, sdcSec)
+      const newSDCScore = calculateEventScore(sdcTime, false, aftSDCScores)
       setSDCScore(newSDCScore);
       sdcSecRef.current.focus()
     }
@@ -186,8 +194,8 @@ const BasicCalculator = (props) => {
       alert("Please enter a number");
     }
     else {
-      sdcTime = timeFormat(sdcMin, sdcSec)
-      const newSDCScore = calculateEventScore(sdcTime, false, SDCScores);
+      const sdcTime = timeFormat(sdcMin, sdcSec)
+      const newSDCScore = calculateEventScore(sdcTime, false, aftSDCScores);
       setSDCScore(newSDCScore);
       if (sdcSec.toString().length == 2) {
         plankMinRef.current.focus();
@@ -205,7 +213,7 @@ const BasicCalculator = (props) => {
       alert("Please enter a number");
     }
     else {
-      const newPlankScore = calculateEventScore(timeFormat(plankMin, plankSec), true, plankScores);
+      const newPlankScore = calculateEventScore(timeFormat(plankMin, plankSec), true, aftPlankScores);
       setPlankScore(newPlankScore);
       plankSecRef.current.focus()
     }
@@ -221,7 +229,7 @@ const BasicCalculator = (props) => {
       alert("Please enter a number");
     }
     else {
-      const newPlankScore = calculateEventScore(timeFormat(plankMin, plankSec), true, plankScores);
+      const newPlankScore = calculateEventScore(timeFormat(plankMin, plankSec), true, aftPlankScores);
       setPlankScore(newPlankScore);
       if (plankSec.toString().length == 2) {
         runMinRef.current.focus();
@@ -239,7 +247,7 @@ const BasicCalculator = (props) => {
       alert("Please enter a number");
     }
     else {
-      const newRunScore = calculateEventScore(timeFormat(runMin, runSec), false, runScores);
+      const newRunScore = calculateEventScore(timeFormat(runMin, runSec), false, aftRunScores);
       setRunScore(newRunScore);
       if (runMin.toString().length == 2) {
         runSecRef.current.focus();
@@ -257,7 +265,7 @@ const BasicCalculator = (props) => {
       alert("Please enter a number");
     }
     else {
-      const newRunScore = calculateEventScore(timeFormat(runMin, runSec), false, runScores);
+      const newRunScore = calculateEventScore(timeFormat(runMin, runSec), false, aftRunScores);
       setRunScore(newRunScore);
       if (runSec.toString().length == 2) {
         runSecRef.current.blur();
@@ -360,12 +368,12 @@ const BasicCalculator = (props) => {
   }
   
   const timeFormat = (minutes, seconds) => {
-    const formattedTime = parseFloat(minutes) + seconds / 60.0
-    return formattedTime
+    const formattedTime = parseFloat(minutes) + seconds / 60.0;
+    return formattedTime;
   }
   
   const calculateEventScore = (input, above, scoresArray) => {
-    /*const ageGroups = [
+    const ageGroups = [
       { maxAge: 22, maleIndex: 1, femaleIndex: 2 },
       { maxAge: 27, maleIndex: 3, femaleIndex: 4 },
       { maxAge: 32, maleIndex: 5, femaleIndex: 6 },
@@ -378,9 +386,15 @@ const BasicCalculator = (props) => {
       { maxAge: Infinity, maleIndex: 19, femaleIndex: 20 }
     ];
   
-    const genderIndex = gender.toLowerCase() === 'm' ? 'maleIndex' : 'femaleIndex';
+    const genderIndex = isCombatMOS ? 'maleIndex' : 'femaleIndex';
     const comparison = above ? (a, b) => a >= b : (a, b) => a <= b;
 
+    let age;
+    try {
+      age = parseInt(ageText);
+    } catch {
+      age = 17;
+    }
     for (const group of ageGroups) {
       if (age < group.maxAge) {
         const index = group[genderIndex];
@@ -390,11 +404,13 @@ const BasicCalculator = (props) => {
           }
         }
       }
-    }*/
+    }
     return 0;
   }
 
   const clearScore = () => {
+    setIsCombatMOS(true);
+    setAgeText('');
     setDeadlift('');
     setPushups('');
     setSDCMin('');
@@ -403,6 +419,7 @@ const BasicCalculator = (props) => {
     setPlankSec('');
     setRunMin('');
     setRunSec('');
+    setVisibleSave(false);
   }
 
   const changeIsCombatMOS = () => {
@@ -414,37 +431,37 @@ const BasicCalculator = (props) => {
   }
 
   const fields = [
-    { 
+    {
       key: 'deadlift', text: 'Deadlift', value: deadlift, ref: deadliftRef, ph: '(in lbs)', 
       onCT: setDeadlift, onSE: () => pushupRef.current.focus(), bos: false, visible: visible1, 
-      onPress: (isVisible) => {setVisible1(isVisible)}, imagePath: require('../../assets/DeadliftScores.png'), 
-      imageStyle: calculatorStyles.deadliftScoresImage, score: deadliftScore
+      onPress: (isVisible) => {setVisible1(isVisible)}, imagePath: require('../../assets/AFTScoreCharts/AFTDeadliftScores.png'), 
+      imageStyle: calculatorStyles.aftDeadliftScoresImage, score: deadliftScore
     },
     {
       key: 'pushups', text: 'T-Push Ups', value: pushups, ref: pushupRef, ph: '0-99',
       onCT: setPushups, onSE: () => sdcMinRef.current.focus(), bos: false, visible: visible3,
-      onPress: (isVisible) => {setVisible3(isVisible)}, imagePath: require('../../assets/PushupScores.png'),
-      imageStyle: calculatorStyles.pushUpScoresImage, score: pushupScore
+      onPress: (isVisible) => {setVisible3(isVisible)}, imagePath: require('../../assets/AFTScoreCharts/AFTPushupScores.png'),
+      imageStyle: calculatorStyles.aftPushUpScoresImage, score: pushupScore
     },
     {
       key: 'sdcMin', text: 'SDC', value: sdcMin, ref: sdcMinRef, ph: 'Minutes',
       onCT: setSDCMin, onSE: () => sdcSecRef.current.focus(), bos: false, visible: visible4,
-      onPress: (isVisible) => {setVisible4(isVisible)}, imagePath: require('../../assets/SDCScores.png'),
-      imageStyle: calculatorStyles.sdcScoresImage, score: sdcScore, key2: 'sdcSec', value2: sdcSec,
+      onPress: (isVisible) => {setVisible4(isVisible)}, imagePath: require('../../assets/AFTScoreCharts/AFTSDCScores.png'),
+      imageStyle: calculatorStyles.aftSdcScoresImage, score: sdcScore, key2: 'sdcSec', value2: sdcSec,
       ref2: sdcSecRef, onCT2: setSDCSec, onSE2: () => plankMinRef.current.focus(), bos2: false
     },
     {
       key: 'plankMin', text: 'Plank', value: plankMin, ref: plankMinRef, ph: 'Minutes',
       onCT: setPlankMin, onSE: () => plankSecRef.current.focus(), bos: false, visible: visible5,
-      onPress: (isVisible) => {setVisible5(isVisible)}, imagePath: require('../../assets/PlankScores.png'),
-      imageStyle: calculatorStyles.plankScoresImage, score: plankScore, key2: 'plankSec', value2: plankSec,
+      onPress: (isVisible) => {setVisible5(isVisible)}, imagePath: require('../../assets/AFTScoreCharts/AFTPlankScores.png'),
+      imageStyle: calculatorStyles.aftPlankScoresImage, score: plankScore, key2: 'plankSec', value2: plankSec,
       ref2: plankSecRef, onCT2: setPlankSec, onSE2: () => runMinRef.current.focus(), bos2: false
     },
     {
       key: 'runMin', text: '2MR', value: runMin, ref: runMinRef, ph: 'Minutes',
       onCT: setRunMin, onSE: () => runSecRef.current.focus(), bos: false, visible: visible6,
-      onPress: (isVisible) => {setVisible6(isVisible)}, imagePath: require('../../assets/2MRScores.png'),
-      imageStyle: calculatorStyles.MRScoresImage, score: runScore, key2: 'runSec', value2: runSec,
+      onPress: (isVisible) => {setVisible6(isVisible)}, imagePath: require('../../assets/AFTScoreCharts/AFTRunScores.png'),
+      imageStyle: calculatorStyles.aftMRScoresImage, score: runScore, key2: 'runSec', value2: runSec,
       ref2: runSecRef, onCT2: setRunSec, onSE2: () => {}, bos2: true
     }
   ]    
@@ -483,7 +500,7 @@ const BasicCalculator = (props) => {
             <TouchableOpacity onPress={() => setInfoModalVisible(true)}>
               <Text>ℹ️</Text>
             </TouchableOpacity>
-            <Text style={calculatorStyles.combatMOSText}>Combat MOS?</Text>
+            <Text style={calculatorStyles.combatMOSText}>Male or Combat MOS?</Text>
             <View style={calculatorStyles.switchContainer}>
               <Text style={calculatorStyles.noText}>No</Text>
               <Switch
@@ -501,46 +518,59 @@ const BasicCalculator = (props) => {
           >
             <View style={calculatorStyles.infoModalOverlay}>
               <View style={calculatorStyles.infoModalContent}>
-                <Text>This is your modal content.</Text>
+                <Text>The following are considered Combat MOS: 11A, 11B, 11C, 11Z, 12A, 12B, 13A, 13F, 18A, 180A, 18B, 18C, 18D, 18E, 18F, 18Z, 19A, 19C, 19D, 19K, 19Z</Text>
                 <TouchableOpacity style={calculatorStyles.button} onPress={() => setInfoModalVisible(false)}>
                   <Text style={calculatorStyles.buttonText}>Close</Text>
                 </TouchableOpacity>
               </View>
             </View>
-          </Modal>          
+          </Modal>     
+
+          <View style={[calculatorStyles.container, {marginTop: keyboardOpen ? 10 : 25}]}>
+              <Text style={calculatorStyles.fieldText}>Age: </Text>
+              <TextInput
+                value={ageText}
+                keyboardType='numeric'
+                returnKeyType='next'
+                style={calculatorStyles.input}
+                placeholder="1-99"
+                placeholderTextColor='gray'
+                onChangeText={setAgeText}
+                onSubmitEditing={() => deadliftRef.current.focus()}
+              />
+            </View>     
 
           {fields.map(field => (
             <View style={[calculatorStyles.container, {marginTop: keyboardOpen ? 10 : 25}]} key={field.key}>
-              <Text>{field.text}</Text>
+              <Text style={calculatorStyles.fieldText}>{field.text}</Text>
               <TextInput
                 key={field.key}
                 value={field.value}
                 keyboardType='numeric'
-                returnKeyType='done'
+                returnKeyType='next'
                 ref={field.ref}
                 style={calculatorStyles.input}
                 placeholder={field.ph}
                 placeholderTextColor='gray'
                 onChangeText={field.onCT}
                 onSubmitEditing={field.onSE}
-                blurOnSubmit={field.bos}
               />
               {field.key2 &&
-                <Text>:</Text>
+                <Text style={calculatorStyles.fieldText}>:</Text>
               }
               {field.key2 &&
                 <TextInput
                   key={field.key2}
                   value={field.value2}
                   keyboardType="numeric"
-                  returnKeyType='done'
+                  returnKeyType='next'
                   ref={field.ref2}
                   style={calculatorStyles.input}
                   placeholder="Seconds"
                   placeholderTextColor="gray"
                   onChangeText={field.onCT2}
                   onSubmitEditing={field.onSE2}
-                  blurOnSubmit={field.bos2}/>
+                />
               }
               <Text>     </Text>
               <ModalPopup visible={field.visible}>
@@ -562,12 +592,12 @@ const BasicCalculator = (props) => {
               <TouchableOpacity onPress={() => {field.onPress(true)}} style={calculatorStyles.button}>
                 <Text style={calculatorStyles.buttonText}>Score:</Text>
               </TouchableOpacity>
-              <Text>{field.score}</Text>
+              <Text style={calculatorStyles.fieldText}>{field.score}</Text>
             </View>
           ))}
 
           <View style={calculatorStyles.container}>
-            <Text>Total Score: {totalScore}</Text>
+            <Text style={calculatorStyles.scoreText}>Total Score: {totalScore}</Text>
             {visibleSave && 
               <TouchableOpacity onPress={() => verifyLoggedIn()} style={calculatorStyles.button}>
                   <Text style={calculatorStyles.buttonText}>Save Score</Text>
@@ -592,7 +622,7 @@ const BasicCalculator = (props) => {
 
             <View style={calculatorStyles.alternateEventsImage}>
               <ReactNativeZoomableView bindToBorders={true} maxZoom={3} minZoom={1}>
-                <Image source={require('../../assets/AlternateEvents.png')} style={calculatorStyles.alternateEventsImage}/>
+                <Image source={require('../../assets/AFTScoreCharts/AFTAlternateEventScores.png')} style={calculatorStyles.aftAlternateEventsImage}/>
               </ReactNativeZoomableView>
             </View>
 
@@ -607,18 +637,4 @@ const BasicCalculator = (props) => {
   )
 }
 
-BasicCalculator.navigationOptions = screenProps => ({
-  title: "Score Calculator",
-  headerStyle: {
-    backgroundColor: '#FEC029'
-  },
-  headerTintColor: '#000',
-  headerTitleStyle: {
-    fontWeight: 'bold',
-    fontSize: 24,
-    color: '#000'
-  },
-  backgroundColor: '#000'
-})
-
-export default BasicCalculator;
+export default AFTCalculator;
