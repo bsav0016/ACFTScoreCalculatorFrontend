@@ -7,7 +7,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>Updated ACFT Score Calculator</string>
+    <string>AFT Score Calculator</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -19,7 +19,7 @@
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
-    <string>2.1.2</string>
+    <string>3.0</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleURLTypes</key>
@@ -38,7 +38,7 @@
       </dict>
     </array>
     <key>CFBundleVersion</key>
-    <string>34</string>
+    <string>35</string>
     <key>GADApplicationIdentifier</key>
     <string>ca-app-pub-3407478259803394~7728437270</string>
     <key>LSRequiresIPhoneOS</key>
