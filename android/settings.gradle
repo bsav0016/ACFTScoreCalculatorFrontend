@@ -44,7 +44,7 @@ if (getRNMinorVersion() >= 75) {
   }
 }
 
-rootProject.name = 'Updated ACFT Score Calculator'
+rootProject.name = 'AFT Score Calculator'
 
 dependencyResolutionManagement {
   versionCatalogs {

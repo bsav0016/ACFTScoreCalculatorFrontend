@@ -62,17 +62,3 @@ export default function Home(props) {
     </SafeAreaView>
   );
 }
-
-Home.navigationOptions = screenProps => ({
-  title: "Home",
-  headerStyle: {
-      backgroundColor: '#FEC029'
-  },
-  headerTintColor: '#000',
-  headerTitleStyle: {
-      fontWeight: 'bold',
-      fontSize: 24,
-      color: '#000'
-  },
-  headerLeft: () => null
-})
