@@ -1,8 +1,9 @@
-import { Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
+import { Text, View, SafeAreaView, ScrollView } from 'react-native';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import ACFTBannerAd from '../ACFTBannerAd';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import homeStyles from './homeStyles';
+import { MenuItem, SectionLabel } from '../ui';
+import { colors, font, space } from '../theme';
 
 
 export default function Home(props) {
@@ -26,38 +27,42 @@ export default function Home(props) {
   }
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: 'black'}}>
-      <View style={homeStyles.container}>
-        <TouchableOpacity onPress={() => props.navigation.navigate("AFTCalculator")}>
-          <View style={homeStyles.button}>
-            <Text style={homeStyles.buttonText}>AFT Calculator</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => props.navigation.navigate("ACFTCalculator")}>
-          <View style={homeStyles.button}>
-            <Text style={homeStyles.buttonText}>ACFT Calculator</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => props.navigation.navigate("BodyFatCalculator")}>
-          <View style={homeStyles.button}>
-            <Text style={homeStyles.buttonText}>H/W & Body Fat %</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={clickProfile}>
-          <View style={homeStyles.button}>
-            <Text style={homeStyles.buttonText}>User Account</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => props.navigation.navigate("About")}>
-          <View style={homeStyles.button}>
-            <Text style={homeStyles.buttonText}>About</Text>
-          </View>
-        </TouchableOpacity>
-        
-      </View>
-      <View style={homeStyles.caoContainer}>
-        <Text style={homeStyles.caoText}>Current as of 1 May 2025</Text>
-      </View>
+    <SafeAreaView style={{flex: 1, backgroundColor: colors.bg}}>
+      <ScrollView contentContainerStyle={{padding: space.lg, paddingBottom: space.xl}}>
+        <SectionLabel style={{marginTop: space.sm}}>Current standards</SectionLabel>
+        <MenuItem
+          title="AFT Calculator"
+          subtitle="Army Fitness Test scoring and how you rank"
+          onPress={() => props.navigation.navigate("AFTCalculator")}
+        />
+        <MenuItem
+          title="Waist-to-Height Ratio"
+          subtitle="Body composition screening"
+          onPress={() => props.navigation.navigate("WaistToHeightRatio")}
+        />
+
+        <SectionLabel style={{marginTop: space.xl}}>Historical standards</SectionLabel>
+        <MenuItem
+          title="ACFT Calculator"
+          subtitle="Army Combat Fitness Test scoring"
+          onPress={() => props.navigation.navigate("ACFTCalculator")}
+        />
+        <MenuItem
+          title="H/W & Body Fat %"
+          subtitle="Height, weight and tape-test body fat"
+          onPress={() => props.navigation.navigate("BodyFatCalculator")}
+        />
+
+        <SectionLabel style={{marginTop: space.xl}}>More</SectionLabel>
+        <MenuItem
+          title="User Account"
+          subtitle="Sign in and view saved scores"
+          onPress={clickProfile}
+        />
+        <MenuItem title="About" onPress={() => props.navigation.navigate("About")} />
+
+        <Text style={[font.caption, {textAlign: 'center', marginTop: space.xl}]}>Current as of 7 July 2026</Text>
+      </ScrollView>
       <ACFTBannerAd/>
     </SafeAreaView>
   );
