@@ -7,6 +7,7 @@ import { colors, font, radius, space } from '../theme';
 const GROUP_STORAGE_KEY = 'aft_percentile_group_by';
 const DEFAULT_GROUPS = ['age_bracket', 'scoring_standard'];
 const DEBOUNCE_MS = 400;
+const REQUEST_TIMEOUT_MS = 8000;
 
 const GROUP_CHIPS = [
   { key: 'age_bracket', label: 'Age group' },
@@ -82,7 +83,14 @@ export default function PercentileCard({ scores, age, maleOrCombat }) {
     const thisRequest = ++requestId.current;
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`${backendUrl}api/acft_scores/percentiles/?${query}`);
+        const controller = new AbortController();
+        const abortTimer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+        let res;
+        try {
+          res = await fetch(`${backendUrl}api/acft_scores/percentiles/?${query}`, { signal: controller.signal });
+        } finally {
+          clearTimeout(abortTimer);
+        }
         const data = await res.json();
         if (thisRequest !== requestId.current) return; // a newer request superseded this one
         if (!res.ok) throw new Error(data.message);
