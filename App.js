@@ -1,4 +1,5 @@
 import React from 'react';
+import { View } from 'react-native';
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -16,12 +17,21 @@ import { colors, headerOptions } from './components/theme';
 
 const Stack = createNativeStackNavigator();
 
+// On tablets the phone-shaped screens would stretch edge to edge, so keep them to a readable column.
+const MAX_CONTENT_WIDTH = 640;
+const screenLayout = ({ children }) => (
+  <View style={{ flex: 1, alignItems: 'center', backgroundColor: colors.bg }}>
+    <View style={{ flex: 1, width: '100%', maxWidth: MAX_CONTENT_WIDTH }}>{children}</View>
+  </View>
+);
+
 export default function App() {
   return (
     <NavigationContainer theme={{ ...DarkTheme, colors: { ...DarkTheme.colors, background: colors.bg } }}>
       <Stack.Navigator 
         initialRouteName="Home"
         screenOptions={headerOptions}
+        screenLayout={screenLayout}
       >
         <Stack.Screen name="Home" component={Home} options={{ title: "Home" }}/>
         <Stack.Screen name="AFTCalculator" component={AFTCalculator} options={{ title: "AFT Calculator" }}/>
