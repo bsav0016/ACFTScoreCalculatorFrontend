@@ -22,7 +22,6 @@
     "expo-constants": "~57.0.21",
     "expo-dev-client": "~57.0.19",
     "expo-image-picker": "~57.0.20",
-    "expo-in-app-purchases": "~14.5.0",
     "expo-linking": "~57.0.12",
     "expo-sharing": "~57.0.22",
     "expo-splash-screen": "~57.0.9",
