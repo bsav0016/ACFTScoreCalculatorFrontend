@@ -102,3 +102,7 @@ venv
 /android
 /ios
 .vscode/
+
+# jest / export output
+coverage/
+dist/

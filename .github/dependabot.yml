@@ -1,0 +1,41 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      dev-tooling:
+        patterns: [jest, "babel-jest", eslint, "eslint-*", "@babel/*"]
+        update-types: [minor, patch]
+      app-patches:
+        patterns: ["*"]
+        update-types: [patch]
+    ignore:
+      # Expo pins the React Native stack to the versions its SDK was tested with. Moving any of these past a patch
+      # must be done together with `npx expo install --fix` (an SDK upgrade), not one Dependabot PR at a time.
+      - dependency-name: expo
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "expo-*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: babel-preset-expo
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: react
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: react-dom
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: react-native
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "react-native-*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@react-native-async-storage/async-storage"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
