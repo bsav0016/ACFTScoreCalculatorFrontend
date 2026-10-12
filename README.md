@@ -2,7 +2,9 @@
 
 Mobile app that scores the U.S. Army Fitness Test (AFT, formerly the ACFT). Enter your age, sex or combat-MOS standard, and your event results; it returns a score for each event and a total, and shows how that score compares with other users. Published on the iOS App Store as [Updated ACFT Score Calculator](https://apps.apple.com/us/app/updated-acft-score-calculator/id1619926227).
 
-<!-- TODO: add screenshots (home, AFT calculator, percentile card, goal planner) -->
+<p><img src="docs/screenshots/home.png" alt="Home screen" width="240"> <img src="docs/screenshots/calculator.png" alt="AFT calculator with scores entered" width="240"> <img src="docs/screenshots/goal-planner.png" alt="Goal planner" width="240"></p>
+
+<!-- TODO: add a screenshot of the percentile card (needs the backend running) -->
 
 ## Why it exists
 
