@@ -12,7 +12,7 @@
     "build:check": "expo export --platform ios --platform android --output-dir dist"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.6.0",
+    "@fortawesome/fontawesome-svg-core": "^7.3.1",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-native-fontawesome": "^0.3.2",
     "@openspacelabs/react-native-zoomable-view": "^2.1.6",
