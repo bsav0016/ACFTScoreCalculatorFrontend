@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Image, Text, View, TextInput, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, TouchableOpacity, Modal, Alert, ScrollView, Switch } from 'react-native';
+import { Image, Text, View, KeyboardAvoidingView, Platform, Keyboard, TouchableOpacity, Alert, ScrollView, StyleSheet } from 'react-native';
 import ACFTBannerAd from "../ACFTBannerAd";
 import * as StoreReview from 'expo-store-review';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Dialog from 'react-native-dialog';
 import ReactNativeZoomableView from '@openspacelabs/react-native-zoomable-view/src/ReactNativeZoomableView';
+import Button from '../Button';
+import PercentileCard from './PercentileCard';
+import { Card, ChartModal, CompactInput, EventRow, InputRow, ScrollIntoViewContext, Segmented, TotalBar, useKeepFocusedVisible } from '../ui';
+import { colors, font, space } from '../theme';
 import { backendUrl } from '../constants';
 import calculatorStyles from './calculatorStyles';
 import aftDeadliftScores from './AFTScores/deadliftScores';
@@ -14,33 +18,6 @@ import aftPlankScores from './AFTScores/plankScores';
 import aftSDCScores from './AFTScores/SDCScores';
 import aftRunScores from './AFTScores/runScores';
 
-
-const ModalPopup = ({visible, children}) => {
-  const [showModal,setShowModal] = React.useState(visible)
-
-  React.useEffect(() => {
-    toggleModal();
-  }, [visible]);
-
-  const toggleModal = () => {
-    if(visible){
-      setShowModal(true)
-    }
-    else{
-      setShowModal(false)
-    }
-  }
-
-  return (
-    <Modal transparent visible={showModal}>
-      <View style={calculatorStyles.modalBackground}>
-        <View style= {[calculatorStyles.modalContainer]}>
-          {children}
-        </View>
-      </View>
-    </Modal>
-  )
-}
 
 const AFTCalculator = (props) => {
   const [isCombatMOS, setIsCombatMOS] = useState(true);
@@ -85,6 +62,7 @@ const AFTCalculator = (props) => {
   const [visible6,setVisible6] = React.useState(false)
 
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const { scrollProps, ensureVisible } = useKeepFocusedVisible();
 
   useEffect(() => {
     if (Platform.OS === 'ios') {
@@ -324,19 +302,22 @@ const AFTCalculator = (props) => {
       return;
     }
     let data = {
+      standard: 'AFT',
       month: month,
       day: day,
       year: year,
-      deadlift_raw: deadlift,
+      age: parseInt(ageText, 10),
+      male_or_combat: isCombatMOS,
+      deadlift_raw: Number(deadlift),
       deadlift_score: deadliftScore,
-      pushups_raw: pushups, 
+      pushups_raw: Number(pushups),
       pushups_score: pushupScore,
-      sdc_raw: sdcMin * 60 + sdcSec, 
-      sdc_score: sdcScore, 
-      plank_raw: plankMin * 60 + plankSec, 
+      sdc_raw: Number(sdcMin) * 60 + Number(sdcSec),
+      sdc_score: sdcScore,
+      plank_raw: Number(plankMin) * 60 + Number(plankSec),
       plank_score: plankScore,
-      tmr_raw: runMin * 60 + runSec, 
-      tmr_score: runScore, 
+      tmr_raw: Number(runMin) * 60 + Number(runSec),
+      tmr_score: runScore,
       total_score: totalScore
     };
     saveToDatabase(data);
@@ -422,12 +403,21 @@ const AFTCalculator = (props) => {
     setVisibleSave(false);
   }
 
-  const changeIsCombatMOS = () => {
-    if (isCombatMOS) {
-      setIsCombatMOS(false);
-    } else {
-      setIsCombatMOS(true);
-    }
+  // Hand what's been entered to the goal planner (time events in decimal minutes, anything blank as null).
+  const openPlanner = () => {
+    const count = (value) => (value === '' ? null : Number(value))
+    const minutes = (min, sec) => ((min === '' && sec === '') ? null : (Number(min) || 0) + (Number(sec) || 0) / 60)
+    props.navigation.navigate('AFTPlanner', {
+      age: parseInt(ageText, 10),
+      maleOrCombat: isCombatMOS,
+      raws: {
+        deadlift: count(deadlift),
+        pushups: count(pushups),
+        sdc: minutes(sdcMin, sdcSec),
+        plank: minutes(plankMin, plankSec),
+        tmr: minutes(runMin, runSec)
+      }
+    })
   }
 
   const fields = [
@@ -466,174 +456,117 @@ const AFTCalculator = (props) => {
     }
   ]    
 
+  // Only rank events the user has actually entered; the total only counts once all five are in.
+  const enteredEvents = {
+    deadlift: deadlift !== '',
+    pushups: pushups !== '',
+    sdc: sdcMin !== '' || sdcSec !== '',
+    plank: plankMin !== '' || plankSec !== '',
+    tmr: runMin !== '' || runSec !== ''
+  }
+  const eventScores = {
+    deadlift: deadliftScore, pushups: pushupScore, sdc: sdcScore, plank: plankScore, tmr: runScore
+  }
+  const percentileScores = {}
+  for (const event in enteredEvents) {
+    if (enteredEvents[event]) {
+      percentileScores[event] = eventScores[event]
+    }
+  }
+  if (Object.values(enteredEvents).every(Boolean)) {
+    percentileScores.total = totalScore
+  }
+
   const Container = Platform.OS === 'ios' ? KeyboardAvoidingView : View;
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <Container style={calculatorStyles.container1}
-        behavior="padding">
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardDismissMode='none'>
-          <View style={[calculatorStyles.container, {marginTop: keyboardOpen ? 10 : 25}]}>
-
-            <Dialog.Container visible={visibleDate}>
-              <Dialog.Title>Input Test Date</Dialog.Title>
-              <Dialog.Description>
-                Please input the test date.
-              </Dialog.Description>
-              <View style={calculatorStyles.inputContainer}>
-                <Dialog.Description>Day:</Dialog.Description>
-                <Dialog.Input placeholder={"Day"} onChangeText={setDay}/>
-              </View>
-              <View style={calculatorStyles.inputContainer}>
-                <Dialog.Description>Month:</Dialog.Description>
-                <Dialog.Input placeholder={"Month (0-12)"} onChangeText={setMonth}/>
-              </View>
-              <View style={calculatorStyles.inputContainer}>
-                <Dialog.Description>Year:</Dialog.Description>
-                <Dialog.Input placeholder={"Year"} onChangeText={setYear}/>
-              </View>
-              <Dialog.Button label="Cancel" onPress={() => setVisibleDate(false)} />
-              <Dialog.Button label="Confirm" onPress={saveScore} />
-            </Dialog.Container>
+    <Container style={{flex: 1, backgroundColor: colors.bg}} behavior="padding">
+      <ScrollView
+        {...scrollProps}
+        style={{flex: 1}}
+        contentContainerStyle={{padding: space.lg}}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
+        <Dialog.Container visible={visibleDate}>
+          <Dialog.Title>Input Test Date</Dialog.Title>
+          <Dialog.Description>
+            Please input the test date.
+          </Dialog.Description>
+          <View style={calculatorStyles.inputContainer}>
+            <Dialog.Description>Day:</Dialog.Description>
+            <Dialog.Input placeholder={"Day"} onChangeText={setDay}/>
           </View>
+          <View style={calculatorStyles.inputContainer}>
+            <Dialog.Description>Month:</Dialog.Description>
+            <Dialog.Input placeholder={"Month (0-12)"} onChangeText={setMonth}/>
+          </View>
+          <View style={calculatorStyles.inputContainer}>
+            <Dialog.Description>Year:</Dialog.Description>
+            <Dialog.Input placeholder={"Year"} onChangeText={setYear}/>
+          </View>
+          <Dialog.Button label="Cancel" onPress={() => setVisibleDate(false)} />
+          <Dialog.Button label="Confirm" onPress={saveScore} />
+        </Dialog.Container>
 
-          <View style={calculatorStyles.combatMOSContainer}>
-            <TouchableOpacity onPress={() => setInfoModalVisible(true)}>
-              <Text>ℹ️</Text>
-            </TouchableOpacity>
-            <Text style={calculatorStyles.combatMOSText}>Male or Combat MOS?</Text>
-            <View style={calculatorStyles.switchContainer}>
-              <Text style={calculatorStyles.noText}>No</Text>
-              <Switch
-                onValueChange={changeIsCombatMOS}
+        <ScrollIntoViewContext.Provider value={ensureVisible}>
+        <Card style={{paddingVertical: space.md}}>
+          <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: space.sm}}>
+            <View style={{flex: 1}}>
+              <Segmented
+                compact
+                options={[
+                  {value: true, label: 'Male / Combat MOS'},
+                  {value: false, label: 'Female non-combat'}
+                ]}
                 value={isCombatMOS}
+                onChange={setIsCombatMOS}
               />
-              <Text style={calculatorStyles.yesText}>Yes</Text>
             </View>
-          </View>
-
-          <Modal
-            transparent={true}
-            visible={infoModalVisible}
-            onRequestClose={() => setInfoModalVisible(false)}
-          >
-            <View style={calculatorStyles.infoModalOverlay}>
-              <View style={calculatorStyles.infoModalContent}>
-                <Text>The following are considered Combat MOS: 11A, 11B, 11C, 11Z, 12A, 12B, 13A, 13F, 18A, 180A, 18B, 18C, 18D, 18E, 18F, 18Z, 19A, 19C, 19D, 19K, 19Z</Text>
-                <TouchableOpacity style={calculatorStyles.button} onPress={() => setInfoModalVisible(false)}>
-                  <Text style={calculatorStyles.buttonText}>Close</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>     
-
-          <View style={[calculatorStyles.container, {marginTop: keyboardOpen ? 10 : 25}]}>
-              <Text style={calculatorStyles.fieldText}>Age: </Text>
-              <TextInput
-                value={ageText}
-                keyboardType='numeric'
-                returnKeyType='next'
-                style={calculatorStyles.input}
-                placeholder="1-99"
-                placeholderTextColor='gray'
-                onChangeText={setAgeText}
-                onSubmitEditing={() => deadliftRef.current.focus()}
-              />
-            </View>     
-
-          {fields.map(field => (
-            <View style={[calculatorStyles.container, {marginTop: keyboardOpen ? 10 : 25}]} key={field.key}>
-              <Text style={calculatorStyles.fieldText}>{field.text}</Text>
-              <TextInput
-                key={field.key}
-                value={field.value}
-                keyboardType='numeric'
-                returnKeyType='next'
-                ref={field.ref}
-                style={calculatorStyles.input}
-                placeholder={field.ph}
-                placeholderTextColor='gray'
-                onChangeText={field.onCT}
-                onSubmitEditing={field.onSE}
-              />
-              {field.key2 &&
-                <Text style={calculatorStyles.fieldText}>:</Text>
-              }
-              {field.key2 &&
-                <TextInput
-                  key={field.key2}
-                  value={field.value2}
-                  keyboardType="numeric"
-                  returnKeyType='next'
-                  ref={field.ref2}
-                  style={calculatorStyles.input}
-                  placeholder="Seconds"
-                  placeholderTextColor="gray"
-                  onChangeText={field.onCT2}
-                  onSubmitEditing={field.onSE2}
-                />
-              }
-              <Text>     </Text>
-              <ModalPopup visible={field.visible}>
-                <View style={{alignItems:'center', justifyContent: 'center'}}>
-                  <View style={calculatorStyles.header}>
-                    <TouchableOpacity onPress={() => {field.onPress(false)}}>
-                      <Image source={require('../../assets/x.png')} style={calculatorStyles.xOut}/>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <View style={field.imageStyle}>
-                  <ReactNativeZoomableView bindToBorders={true} maxZoom={3} minZoom={1}>
-                    <Image source={field.imagePath} style={field.imageStyle}/>
-                  </ReactNativeZoomableView>
-                </View>
-
-              </ModalPopup>
-              <TouchableOpacity onPress={() => {field.onPress(true)}} style={calculatorStyles.button}>
-                <Text style={calculatorStyles.buttonText}>Score:</Text>
-              </TouchableOpacity>
-              <Text style={calculatorStyles.fieldText}>{field.score}</Text>
-            </View>
-          ))}
-
-          <View style={calculatorStyles.container}>
-            <Text style={calculatorStyles.scoreText}>Total Score: {totalScore}</Text>
-            {visibleSave && 
-              <TouchableOpacity onPress={() => verifyLoggedIn()} style={calculatorStyles.button}>
-                  <Text style={calculatorStyles.buttonText}>Save Score</Text>
-              </TouchableOpacity>
-            }
-          </View>
-          
-          <View style={calculatorStyles.container}>
-            <TouchableOpacity onPress={clearScore} style={calculatorStyles.button}>
-              <Text style={calculatorStyles.buttonText}>Clear Score</Text>
+            <TouchableOpacity onPress={() => setInfoModalVisible(true)} accessibilityLabel="Which MOS count as combat?" style={{padding: space.sm}}>
+              <Text style={{color: colors.gold, fontSize: 20, fontWeight: '700'}}>ⓘ</Text>
             </TouchableOpacity>
           </View>
-          
-          <ModalPopup visible={visible}>
-            <View style={{alignItems:'center'}}>
-              <View style={calculatorStyles.header}>
-                <TouchableOpacity onPress={() => setVisible(false)}>
-                  <Image source={require('../../assets/x.png')} style={calculatorStyles.xOut}/>
-                </TouchableOpacity>
-              </View>
-            </View>
+          <InputRow label="Age">
+            <CompactInput
+              value={ageText}
+              onChangeText={setAgeText}
+              placeholder="17-99"
+              blurOnSubmit={false}
+              onSubmitEditing={() => deadliftRef.current.focus()}
+            />
+          </InputRow>
+          {fields.map(field => <EventRow key={field.key} field={field}/>)}
+          <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: space.sm, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border}}>
+            <Text style={[font.caption, {flex: 1}]} numberOfLines={1}>Tap a score for its chart</Text>
+            <TouchableOpacity onPress={openPlanner} style={{padding: 4, marginLeft: space.sm}}>
+              <Text style={{color: colors.gold, fontSize: 13, fontWeight: '700'}}>Goal planner</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setVisible(true)} style={{padding: 4, marginLeft: space.sm}}>
+              <Text style={{color: colors.gold, fontSize: 13, fontWeight: '500'}}>Alt. events</Text>
+            </TouchableOpacity>
+          </View>
+        </Card>
+        </ScrollIntoViewContext.Provider>
 
-            <View style={calculatorStyles.alternateEventsImage}>
-              <ReactNativeZoomableView bindToBorders={true} maxZoom={3} minZoom={1}>
-                <Image source={require('../../assets/AFTScoreCharts/AFTAlternateEventScores.png')} style={calculatorStyles.aftAlternateEventsImage}/>
-              </ReactNativeZoomableView>
-            </View>
+        <ChartModal visible={infoModalVisible} onClose={() => setInfoModalVisible(false)}>
+          <Text style={[font.heading, {marginBottom: space.sm}]}>Male or Combat MOS</Text>
+          <Text style={[font.body, {marginBottom: space.sm}]}>Choose the first option if you are male, or if your MOS is a combat MOS (any gender). Otherwise choose the second.</Text>
+          <Text style={font.body}>The following are considered Combat MOS: 11A, 11B, 11C, 11Z, 12A, 12B, 13A, 13F, 18A, 180A, 18B, 18C, 18D, 18E, 18F, 18Z, 19A, 19C, 19D, 19K, 19Z</Text>
+        </ChartModal>
 
-          </ModalPopup>
-          <TouchableOpacity onPress={() => {setVisible(true)}} style={calculatorStyles.altButton}>
-            <Text style={calculatorStyles.buttonText}>Alternate Event Standards</Text>
-          </TouchableOpacity>
-        </ScrollView>
-        <ACFTBannerAd/>
-      </Container>
-    </TouchableWithoutFeedback>
+        <PercentileCard scores={percentileScores} age={ageText} maleOrCombat={isCombatMOS}/>
+
+        <ChartModal visible={visible} onClose={() => setVisible(false)}>
+          <View style={calculatorStyles.alternateEventsImage}>
+            <ReactNativeZoomableView bindToBorders={true} maxZoom={3} minZoom={1}>
+              <Image source={require('../../assets/AFTScoreCharts/AFTAlternateEventScores.png')} style={calculatorStyles.aftAlternateEventsImage}/>
+            </ReactNativeZoomableView>
+          </View>
+        </ChartModal>
+      </ScrollView>
+      <TotalBar total={totalScore} max={500} canSave={visibleSave} onSave={verifyLoggedIn} onClear={clearScore} compact={keyboardOpen}/>
+      {!keyboardOpen && <ACFTBannerAd/>}
+    </Container>
   )
 }
 

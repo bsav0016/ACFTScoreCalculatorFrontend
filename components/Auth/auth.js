@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Text, View, TextInput, TouchableOpacity, ActivityIndicator, SafeAreaView } from "react-native";
+import { Text, ActivityIndicator, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ACFTBannerAd from '../ACFTBannerAd';
+import Button from '../Button';
 import { backendUrl } from "../constants";
-import authStyles from './authStyles';
+import { Card, LabeledInput, ScrollIntoViewContext, useKeepFocusedVisible } from '../ui';
+import { colors, font, space } from '../theme';
 
 export default function Auth(props) {
+    const { scrollProps, ensureVisible } = useKeepFocusedVisible();
     const passwordInput = useRef();
     const passwordInput2 = useRef();
     const firstNameInput = useRef();
@@ -183,88 +186,89 @@ export default function Auth(props) {
     }
 
     return (
-        <SafeAreaView style={{flex: 1, backgroundColor: 'black'}}>
-            <View style={authStyles.container}>
-                {!regView ? <Text style={authStyles.label}>Username</Text> : <Text/>}
-                <TextInput
-                    style={authStyles.input}
-                    placeholder="Username"
-                    placeholderTextColor={'#a9a9a9'}
-                    onChangeText={text => setUsername(text)}
-                    value={username}
-                    autoCapitalize={'none'}
-                    returnKeyType={'next'}
-                    onSubmitEditing={() => passwordInput.current.focus()}
-                />
-                {!regView ? <Text style={authStyles.label}>Password</Text> : <View/>}
-                <TextInput
-                    style={authStyles.input}
-                    placeholder="Password"
-                    placeholderTextColor={'#a9a9a9'}
-                    onChangeText={text => setPassword(text)}
-                    value={password}
-                    autoCapitalize={'none'}
-                    secureTextEntry={true}
-                    ref={passwordInput}
-                    onSubmitEditing={regView ? () => passwordInput2.current.focus() : () => {}}
-                />
-                {regView &&
-                <View>
-                    <TextInput
-                        style={authStyles.input}
-                        placeholder="Confirm Password"
-                        placeholderTextColor={'#a9a9a9'}
-                        onChangeText={text => setConfirmPassword(text)}
-                        value={confirmPassword}
+        <SafeAreaView style={{flex: 1, backgroundColor: colors.bg}}>
+            <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+            <ScrollIntoViewContext.Provider value={ensureVisible}>
+            <ScrollView {...scrollProps} contentContainerStyle={{padding: space.lg}} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+                <Text style={font.title}>{regView ? "Create account" : "Welcome back"}</Text>
+                <Text style={[font.caption, {marginTop: 4, marginBottom: space.lg}]}>
+                    {regView ? "Save your scores and see how you rank." : "Sign in to save scores and see your history."}
+                </Text>
+
+                <Card>
+                    <LabeledInput
+                        label="Username"
+                        onChangeText={text => setUsername(text)}
+                        value={username}
+                        autoCapitalize={'none'}
+                        returnKeyType={'next'}
+                        onSubmitEditing={() => passwordInput.current.focus()}
+                    />
+                    <LabeledInput
+                        label="Password"
+                        onChangeText={text => setPassword(text)}
+                        value={password}
                         autoCapitalize={'none'}
                         secureTextEntry={true}
-                        ref={passwordInput2}
-                        onSubmitEditing={() => emailInput.current.focus()}
+                        returnKeyType={regView ? 'next' : 'go'}
+                        inputRef={passwordInput}
+                        onSubmitEditing={regView ? () => passwordInput2.current.focus() : () => auth()}
                     />
-                    <TextInput
-                        style={authStyles.input}
-                        placeholder="Email"
-                        placeholderTextColor={'#a9a9a9'}
-                        onChangeText={text => setEmail(text)}
-                        value={email}
-                        autoCapitalize={'none'}
-                        keyboardType={'email-address'}
-                        ref={emailInput}
-                        onSubmitEditing={() => firstNameInput.current.focus()}
-                    />
-                    <TextInput
-                        style={authStyles.input}
-                        placeholder="First Name"
-                        placeholderTextColor={'#a9a9a9'}
-                        onChangeText={text => setFirstName(text)}
-                        value={firstName}
-                        ref={firstNameInput}
-                        onSubmitEditing={() => lastNameInput.current.focus()}
-                    />
-                    <TextInput
-                        style={authStyles.input}
-                        placeholder="Last Name"
-                        placeholderTextColor={'#a9a9a9'}
-                        onChangeText={text => setLastName(text)}
-                        value={lastName}
-                        ref={lastNameInput}
-                    />
-                </View>
-                }
+                    {regView &&
+                    <>
+                        <LabeledInput
+                            label="Confirm password"
+                            onChangeText={text => setConfirmPassword(text)}
+                            value={confirmPassword}
+                            autoCapitalize={'none'}
+                            secureTextEntry={true}
+                            returnKeyType={'next'}
+                            inputRef={passwordInput2}
+                            onSubmitEditing={() => emailInput.current.focus()}
+                        />
+                        <LabeledInput
+                            label="Email"
+                            onChangeText={text => setEmail(text)}
+                            value={email}
+                            autoCapitalize={'none'}
+                            keyboardType={'email-address'}
+                            returnKeyType={'next'}
+                            inputRef={emailInput}
+                            onSubmitEditing={() => firstNameInput.current.focus()}
+                        />
+                        <LabeledInput
+                            label="First name"
+                            onChangeText={text => setFirstName(text)}
+                            value={firstName}
+                            returnKeyType={'next'}
+                            inputRef={firstNameInput}
+                            onSubmitEditing={() => lastNameInput.current.focus()}
+                        />
+                        <LabeledInput
+                            label="Last name"
+                            onChangeText={text => setLastName(text)}
+                            value={lastName}
+                            returnKeyType={'done'}
+                            inputRef={lastNameInput}
+                        />
+                    </>
+                    }
+                </Card>
+
                 {loading ?
-                <ActivityIndicator size="medium" color="#ffffff" style={{marginTop: 15}}/>
+                <ActivityIndicator size="large" color={colors.gold} style={{marginTop: space.lg}}/>
                 :
-                <TouchableOpacity onPress={() => auth()} style={authStyles.button}>
-                    <Text style={authStyles.buttonTextStyle}>
-                        {regView ? "Register" : "Login"}
-                    </Text>
-                </TouchableOpacity>
+                <Button title={regView ? "Register" : "Login"} onPress={() => auth()} style={{marginTop: space.sm}} />
                 }
-                <TouchableOpacity onPress={() => toggleView()}>
-                    {regView ? <Text style={authStyles.viewText}>Already have an account? Login here.</Text> :
-                    <Text style={authStyles.viewText}>Don't have an account? Register here.</Text>}
-                </TouchableOpacity>
-            </View>
+                <Button
+                    variant="text"
+                    onPress={() => toggleView()}
+                    title={regView ? "Already have an account? Login here." : "Don't have an account? Register here."}
+                    style={{marginTop: space.sm}}
+                />
+            </ScrollView>
+            </ScrollIntoViewContext.Provider>
+            </KeyboardAvoidingView>
             <ACFTBannerAd/>
         </SafeAreaView>
     )

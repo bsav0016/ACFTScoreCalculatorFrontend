@@ -1,13 +1,48 @@
-import { Text, View, TextInput, Alert, TouchableOpacity, SafeAreaView } from 'react-native';
+import { Text, View, TextInput, Alert, TouchableOpacity, SafeAreaView, ScrollView, StyleSheet } from 'react-native';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowRightFromBracket, faPenToSquare, faFloppyDisk, faRotateLeft, faTrash } from '@fortawesome/free-solid-svg-icons'
 import Dialog from 'react-native-dialog';
 import ACFTBannerAd from '../ACFTBannerAd';
+import Button from '../Button';
 import { backendUrl } from '../constants';
-import profileStyles from './profileStyles';
+import { Card, inputStyle } from '../ui';
+import { colors, font, radius, space } from '../theme';
 
+
+// One account field: shows the value with a pencil, or an input with save / undo while editing.
+function InfoRow({ label, value, editing, onChangeText, onEdit, onUndo, keyboardType, last }) {
+  return (
+    <View style={[styles.infoRow, last && { borderBottomWidth: 0 }]}>
+      <Text style={styles.infoLabel}>{label}</Text>
+      {editing ?
+        <View style={styles.editRow}>
+          <TextInput
+            value={value}
+            onChangeText={onChangeText}
+            keyboardType={keyboardType}
+            autoCapitalize="none"
+            autoFocus
+            placeholderTextColor={colors.textMuted}
+            style={[inputStyle, styles.editInput]}
+          />
+          <TouchableOpacity onPress={onEdit} style={styles.iconButton} accessibilityLabel={`Save ${label}`}>
+            <FontAwesomeIcon icon={faFloppyDisk} color={colors.gold} size={22}/>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onUndo} style={styles.iconButton} accessibilityLabel={`Cancel editing ${label}`}>
+            <FontAwesomeIcon icon={faRotateLeft} color={colors.textMuted} size={20}/>
+          </TouchableOpacity>
+        </View>
+        :
+        <TouchableOpacity onPress={onEdit} disabled={!onEdit} style={styles.valueRow}>
+          <Text style={styles.infoValue} numberOfLines={1}>{value}</Text>
+          {onEdit && <FontAwesomeIcon icon={faPenToSquare} color={colors.textMuted} size={16} style={{marginLeft: space.sm}}/>}
+        </TouchableOpacity>
+      }
+    </View>
+  )
+}
 
 export default function Profile(props) { 
   const [username, setUsername] = useState('')
@@ -39,6 +74,7 @@ export default function Profile(props) {
     id = await AsyncStorage.getItem('user_id');
     if (id === null) {
         props.navigation.navigate("Auth")
+        return
     }
     if (first) {
       setData(id)
@@ -49,12 +85,15 @@ export default function Profile(props) {
     await fetch(`${backendUrl}api/users/${id}/`, {
         method: 'GET',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`
         }
     })
     .then( res => res.json())
-    .then( res => {
+    .then( async res => {
         if (res.username === undefined) {
+          // Usually an expired or invalid login. Clear it, or the login screen would send us straight back here.
+          await removeStorage()
           alert("Couldn't get account info")
           props.navigation.navigate("Auth")
         }
@@ -305,9 +344,11 @@ export default function Profile(props) {
     setVisible(false)
   }
 
+  const initials = `${(firstName || '').charAt(0)}${(lastName || '').charAt(0)}`.toUpperCase() || '?'
+
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: 'black'}}>
-      <View style={profileStyles.container}>
+    <SafeAreaView style={{flex: 1, backgroundColor: colors.bg}}>
+      <ScrollView contentContainerStyle={{padding: space.lg}} keyboardShouldPersistTaps="handled">
 
         <Dialog.Container visible={visible}>
           <Dialog.Title>Confirm with Password</Dialog.Title>
@@ -319,124 +360,77 @@ export default function Profile(props) {
           <Dialog.Button label="Confirm" onPress={checkPassword} />
         </Dialog.Container>
 
-        <View style={profileStyles.rowContainer}>
-          <Text style={profileStyles.label}>Username:</Text>
-          {editUsername ?
-          <View style={profileStyles.rowContainer}> 
-            <TextInput placeholder={"Username"} onChangeText={setUsername} style={profileStyles.textInput}/>
-            <TouchableOpacity onPress={doEditUsername}>
-              <FontAwesomeIcon icon={faFloppyDisk} style={profileStyles.saveIcon} size={25}/>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => {
-              setUsername(prevUsername)
-              setEditUsername(false)
-            }}>
-              <FontAwesomeIcon icon={faRotateLeft} style={profileStyles.undo} size={23}/>
-            </TouchableOpacity>
+        <View style={styles.header}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{initials}</Text>
           </View>
-          :
-          <TouchableOpacity style={profileStyles.rowContainer}>
-            <Text style={profileStyles.input}>{username}</Text>
-          </TouchableOpacity>
-          }
+          <Text style={font.title}>{`${firstName} ${lastName}`.trim() || username}</Text>
+          <Text style={font.caption}>@{username}</Text>
         </View>
 
-        <View style={profileStyles.rowContainer}>
-          <Text style={profileStyles.label}>Email:</Text>
-          {editEmail ?
-          <View style={profileStyles.rowContainer}> 
-            <TextInput keyboardType={'email-address'} placeholder={"Email"} onChangeText={setEmail} style={profileStyles.textInput}/>
-            <TouchableOpacity onPress={doEditEmail}>
-              <FontAwesomeIcon icon={faFloppyDisk} style={profileStyles.saveIcon} size={25}/>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => {
-              setEmail(prevEmail)
-              setEditEmail(false)
-            }}>
-              <FontAwesomeIcon icon={faRotateLeft} style={profileStyles.undo} size={23}/>
-            </TouchableOpacity>
+        <Card>
+          <InfoRow label="Email" value={email} editing={editEmail} onChangeText={setEmail}
+            onEdit={doEditEmail} onUndo={() => { setEmail(prevEmail); setEditEmail(false) }} keyboardType="email-address"/>
+          <InfoRow label="First name" value={firstName} editing={editFirstName} onChangeText={setFirstName}
+            onEdit={doEditFirstName} onUndo={() => { setFirstName(prevFirstName); setEditFirstName(false) }}/>
+          <InfoRow last label="Last name" value={lastName} editing={editLastName} onChangeText={setLastName}
+            onEdit={doEditLastName} onUndo={() => { setLastName(prevLastName); setEditLastName(false) }}/>
+        </Card>
+
+        <Card style={styles.scoresCard}>
+          <View>
+            <Text style={font.heading}>Saved scores</Text>
+            <Text style={font.caption}>
+              {(acftResults === undefined || acftResults.length === 0) ? 'None yet' : `${acftResults.length} saved`}
+            </Text>
           </View>
-          :
-          <TouchableOpacity onPress={doEditEmail} style={profileStyles.rowContainer}>
-            <Text style={profileStyles.input}>{email}</Text>
-            <FontAwesomeIcon style={profileStyles.editIcon} icon={faPenToSquare}/>
-          </TouchableOpacity>
+          {(acftResults !== undefined && acftResults.length > 0) &&
+            <Button variant="secondary" title="View all" onPress={goToAcftResults} style={{paddingVertical: 10}}/>
           }
-        </View>
+        </Card>
 
-        <View style={profileStyles.rowContainer}>
-          <Text style={profileStyles.label}>First Name:</Text>
-          {editFirstName ?
-          <View style={profileStyles.rowContainer}> 
-            <TextInput placeholder={"First Name"} onChangeText={setFirstName} style={profileStyles.textInput}/>
-            <TouchableOpacity onPress={doEditFirstName}>
-              <FontAwesomeIcon icon={faFloppyDisk} style={profileStyles.saveIcon} size={25}/>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => {
-              setFirstName(prevFirstName)
-              setEditFirstName(false)
-            }}>
-              <FontAwesomeIcon icon={faRotateLeft} style={profileStyles.undo} size={23}/>
-            </TouchableOpacity>
-          </View>
-          :
-          <TouchableOpacity onPress={doEditFirstName} style={profileStyles.rowContainer}>
-            <Text style={profileStyles.input}>{firstName}</Text>
-            <FontAwesomeIcon style={profileStyles.editIcon} icon={faPenToSquare}/>
-          </TouchableOpacity>
-          }
-        </View>
-
-        <View style={profileStyles.rowContainer}>
-          <Text style={profileStyles.label}>Last Name:</Text>
-          {editLastName ?
-          <View style={profileStyles.rowContainer}> 
-            <TextInput placeholder={"Last Name"} onChangeText={setLastName} style={profileStyles.textInput}/>
-            <TouchableOpacity onPress={doEditLastName}>
-              <FontAwesomeIcon icon={faFloppyDisk} style={profileStyles.saveIcon} size={25}/>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => {
-              setLastName(prevLastName)
-              setEditLastName(false)
-            }}>
-              <FontAwesomeIcon icon={faRotateLeft} style={profileStyles.undo} size={23}/>
-            </TouchableOpacity>
-          </View>
-          :
-          <TouchableOpacity onPress={doEditLastName} style={profileStyles.rowContainer}>
-            <Text style={profileStyles.input}>{lastName}</Text>
-            <FontAwesomeIcon style={profileStyles.editIcon} icon={faPenToSquare}/>
-          </TouchableOpacity>
-          }
-        </View>
-
-        <View style={profileStyles.rowContainer}>
-          <Text style={profileStyles.label}>ACFT Results: </Text>
-          {(acftResults === undefined || acftResults.length === 0) ?
-          <Text style={{fontSize: 20, color: '#FEC029', paddingTop: 8}}>None</Text> :
-          <TouchableOpacity onPress={goToAcftResults}>
-            <Text style={{color: 'white', paddingTop: 8, fontSize: 20, textDecorationLine: 'underline'}}>View All</Text>
-          </TouchableOpacity>
-          }
-        </View>
-
-        <View style={{paddingTop: 20}}/>
-
-        <TouchableOpacity onPress={signOut} style={profileStyles.button}>
-          <Text style={profileStyles.signOutText}>Sign Out</Text>
-          <FontAwesomeIcon style={{color: 'red'}} icon={faArrowRightFromBracket}/>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={showConfirmDialog} style={profileStyles.button}>
-          <Text style={{color: 'red', fontSize: 18, paddingRight: 10}}>Delete Account</Text>
-          <FontAwesomeIcon style={{color: 'red'}} icon={faTrash} size={15}/>
-        </TouchableOpacity>
-
-        </View>
+        <Button
+          variant="secondary"
+          title="Sign out"
+          onPress={signOut}
+          icon={faArrowRightFromBracket}
+          style={{marginTop: space.md}}
+        />
+        <Button
+          variant="danger"
+          title="Delete account"
+          onPress={showConfirmDialog}
+          icon={faTrash}
+          iconSize={14}
+          style={{marginTop: space.sm}}
+        />
+      </ScrollView>
       <ACFTBannerAd/>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  header: { alignItems: 'center', marginVertical: space.lg },
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: space.md,
+  },
+  avatarText: { color: colors.onGold, fontSize: 28, fontWeight: '800' },
+  infoRow: { paddingVertical: space.md, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+  infoLabel: { ...font.caption, marginBottom: 4 },
+  valueRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 28 },
+  infoValue: { ...font.body, flex: 1 },
+  editRow: { flexDirection: 'row', alignItems: 'center' },
+  editInput: { flex: 1 },
+  iconButton: { padding: space.sm, marginLeft: 2 },
+  scoresCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: space.md },
+});
 
 Profile.navigationOptions = screenProps => ({
   title: "Profile",

@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Image, Text, View, TextInput, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, TouchableOpacity, Modal, Alert, ScrollView } from 'react-native';
+import { Image, Text, View, KeyboardAvoidingView, Platform, Keyboard, TouchableOpacity, Alert, ScrollView, StyleSheet } from 'react-native';
 import ACFTBannerAd from "../ACFTBannerAd";
 import * as StoreReview from 'expo-store-review';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Dialog from 'react-native-dialog';
 import ReactNativeZoomableView from '@openspacelabs/react-native-zoomable-view/src/ReactNativeZoomableView';
+import { Card, ChartModal, CompactInput, EventRow, InputRow, ScrollIntoViewContext, Segmented, TotalBar, useKeepFocusedVisible } from '../ui';
+import { colors, font, space } from '../theme';
 import { backendUrl } from '../constants';
 import calculatorStyles from '../Calculator/calculatorStyles';
 import ballThrowScores from './Scores/ballThrowScores';
@@ -15,31 +17,6 @@ import pushupScores from './Scores/pushupScores';
 import runScores from './Scores/runScores';
 import SDCScores from './Scores/SDCScores';
 
-
-const ModalPopup = ({visible, children}) => {
-  const [showModal,setShowModal] = React.useState(visible)
-
-  React.useEffect(() => {
-    toggleModal();
-  }, [visible]);
-
-  const toggleModal = () => {
-    if(visible){
-      setShowModal(true)
-    }
-    else{
-      setShowModal(false)
-    }
-  }
-
-  return <Modal transparent visible={showModal}>
-    <View style={calculatorStyles.modalBackground}>
-      <View style= {[calculatorStyles.modalContainer]}>
-        {children}
-      </View>
-    </View>
-  </Modal>
-}
 
 const ACFTCalculator = (props) => {
   const [age, setAge] = useState(0);
@@ -88,6 +65,7 @@ const ACFTCalculator = (props) => {
   const [visible6,setVisible6] = React.useState(false)
 
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const { scrollProps, ensureVisible } = useKeepFocusedVisible();
 
   useEffect(() => {
     if (Platform.OS === 'ios') {
@@ -508,153 +486,76 @@ const ACFTCalculator = (props) => {
 
   const Container = Platform.OS === 'ios' ? KeyboardAvoidingView : View;
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <Container style={calculatorStyles.container1}
-        behavior="padding">
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardDismissMode='none'>
-          <View style={[calculatorStyles.container, {marginTop: keyboardOpen ? 10 : 25}]}>
+    <Container style={{flex: 1, backgroundColor: colors.bg}} behavior="padding">
+      <ScrollView
+        {...scrollProps}
+        style={{flex: 1}}
+        contentContainerStyle={{padding: space.lg}}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
+        <Dialog.Container visible={visibleDate}>
+          <Dialog.Title>Input Test Date</Dialog.Title>
+          <Dialog.Description>
+            Please input the test date.
+          </Dialog.Description>
+          <View style={calculatorStyles.inputContainer}>
+            <Dialog.Description>Day:</Dialog.Description>
+            <Dialog.Input placeholder={"Day"} onChangeText={setDay}/>
+          </View>
+          <View style={calculatorStyles.inputContainer}>
+            <Dialog.Description>Month:</Dialog.Description>
+            <Dialog.Input placeholder={"Month (0-12)"} onChangeText={setMonth}/>
+          </View>
+          <View style={calculatorStyles.inputContainer}>
+            <Dialog.Description>Year:</Dialog.Description>
+            <Dialog.Input placeholder={"Year"} onChangeText={setYear}/>
+          </View>
+          <Dialog.Button label="Cancel" onPress={() => setVisibleDate(false)} />
+          <Dialog.Button label="Confirm" onPress={saveScore} />
+        </Dialog.Container>
 
-            <Dialog.Container visible={visibleDate}>
-              <Dialog.Title>Input Test Date</Dialog.Title>
-              <Dialog.Description>
-                Please input the test date.
-              </Dialog.Description>
-              <View style={calculatorStyles.inputContainer}>
-                <Dialog.Description>Day:</Dialog.Description>
-                <Dialog.Input placeholder={"Day"} onChangeText={setDay}/>
-              </View>
-              <View style={calculatorStyles.inputContainer}>
-                <Dialog.Description>Month:</Dialog.Description>
-                <Dialog.Input placeholder={"Month (0-12)"} onChangeText={setMonth}/>
-              </View>
-              <View style={calculatorStyles.inputContainer}>
-                <Dialog.Description>Year:</Dialog.Description>
-                <Dialog.Input placeholder={"Year"} onChangeText={setYear}/>
-              </View>
-              <Dialog.Button label="Cancel" onPress={() => setVisibleDate(false)} />
-              <Dialog.Button label="Confirm" onPress={saveScore} />
-            </Dialog.Container>
-
-            <Text style={calculatorStyles.fieldText}>Gender:</Text>
-            <TextInput
-              key='gender'
-              value={gender}
-              returnKeyType='next'
-              style={calculatorStyles.input}
-              placeholderTextColor="gray"
-              placeholder="M or F"
-              onChangeText={setGender}
-              onSubmitEditing={() => ageRef.current.focus()}
+        <ScrollIntoViewContext.Provider value={ensureVisible}>
+        <Card style={{paddingVertical: space.md}}>
+          <View style={{marginBottom: space.sm}}>
+            <Segmented
+              compact
+              options={[{value: 'M', label: 'Male'}, {value: 'F', label: 'Female'}]}
+              value={String(gender).toUpperCase()}
+              onChange={setGender}
             />
-            <Text style={calculatorStyles.fieldText}>     Age:</Text>
-            <TextInput
-              key='age'
-              value={age}
-              keyboardType="numeric"
-              returnKeyType='done'
-              ref={ageRef}
-              style={calculatorStyles.input}
-              placeholderTextColor="gray"
-              placeholder="0-99"
+          </View>
+          <InputRow label="Age">
+            <CompactInput
+              value={age === 0 ? '' : String(age)}
               onChangeText={setAge}
+              placeholder="17-99"
+              ref={ageRef}
+              blurOnSubmit={false}
               onSubmitEditing={() => deadliftRef.current.focus()}
             />
-          </View>
-
-          {fields.map(field => (
-            <View style={[calculatorStyles.container, {marginTop: keyboardOpen ? 10 : 25}]} key={field.key}>
-              <Text style={calculatorStyles.fieldText}>{field.text}</Text>
-              <TextInput
-                key={field.key}
-                value={field.value}
-                keyboardType='numeric'
-                returnKeyType='done'
-                ref={field.ref}
-                style={calculatorStyles.input}
-                placeholder={field.ph}
-                placeholderTextColor='gray'
-                onChangeText={field.onCT}
-                onSubmitEditing={field.onSE}
-              />
-              {field.key2 &&
-                <Text style={calculatorStyles.fieldText}>:</Text>
-              }
-              {field.key2 &&
-                <TextInput
-                  key={field.key2}
-                  value={field.value2}
-                  keyboardType="numeric"
-                  returnKeyType='done'
-                  ref={field.ref2}
-                  style={calculatorStyles.input}
-                  placeholder="Seconds"
-                  placeholderTextColor="gray"
-                  onChangeText={field.onCT2}
-                  onSubmitEditing={field.onSE2}
-                  blurOnSubmit={field.bos2}/>
-              }
-              <Text style={calculatorStyles.fieldText}>     </Text>
-              <ModalPopup visible={field.visible}>
-                <View style={{alignItems:'center', justifyContent: 'center'}}>
-                  <View style={calculatorStyles.header}>
-                    <TouchableOpacity onPress={() => {field.onPress(false)}}>
-                      <Image source={require('../../assets/x.png')} style={calculatorStyles.xOut}/>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <View style={field.imageStyle}>
-                  <ReactNativeZoomableView bindToBorders={true} maxZoom={3} minZoom={1}>
-                    <Image source={field.imagePath} style={field.imageStyle}/>
-                  </ReactNativeZoomableView>
-                </View>
-
-              </ModalPopup>
-              <TouchableOpacity onPress={() => {field.onPress(true)}} style={calculatorStyles.button}>
-                <Text style={calculatorStyles.buttonText}>Score:</Text>
-              </TouchableOpacity>
-              <Text style={calculatorStyles.fieldText}>{field.score}</Text>
-            </View>
-          ))}
-
-          <View style={calculatorStyles.container}>
-            <Text style={calculatorStyles.fieldText}>Total Score: {totalScore}</Text>
-            {visibleSave && 
-              <TouchableOpacity onPress={() => verifyLoggedIn()} style={calculatorStyles.button}>
-                  <Text style={calculatorStyles.buttonText}>Save Score</Text>
-              </TouchableOpacity>
-            }
-          </View>
-          
-          <View style={calculatorStyles.container}>
-            <TouchableOpacity onPress={clearScore} style={calculatorStyles.button}>
-              <Text style={calculatorStyles.buttonText}>Clear Score</Text>
+          </InputRow>
+          {fields.map(field => <EventRow key={field.key} field={field}/>)}
+          <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: space.sm, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border}}>
+            <Text style={font.caption}>Tap a score to see its chart</Text>
+            <TouchableOpacity onPress={() => setVisible(true)} style={{padding: 4}}>
+              <Text style={{color: colors.gold, fontSize: 13, fontWeight: '500'}}>Alternate standards</Text>
             </TouchableOpacity>
           </View>
-          
-          <ModalPopup visible={visible}>
-            <View style={{alignItems:'center'}}>
-              <View style={calculatorStyles.header}>
-                <TouchableOpacity onPress={() => setVisible(false)}>
-                  <Image source={require('../../assets/x.png')} style={calculatorStyles.xOut}/>
-                </TouchableOpacity>
-              </View>
-            </View>
+        </Card>
+        </ScrollIntoViewContext.Provider>
 
-            <View style={calculatorStyles.alternateEventsImage}>
-              <ReactNativeZoomableView bindToBorders={true} maxZoom={3} minZoom={1}>
-                <Image source={require('../../assets/AlternateEvents.png')} style={calculatorStyles.alternateEventsImage}/>
-              </ReactNativeZoomableView>
-            </View>
-
-          </ModalPopup>
-          <TouchableOpacity onPress={() => {setVisible(true)}} style={calculatorStyles.altButton}>
-            <Text style={calculatorStyles.buttonText}>Alternate Event Standards</Text>
-          </TouchableOpacity>
-        </ScrollView>
-        <ACFTBannerAd/>
-      </Container>
-    </TouchableWithoutFeedback>
+        <ChartModal visible={visible} onClose={() => setVisible(false)}>
+          <View style={calculatorStyles.alternateEventsImage}>
+            <ReactNativeZoomableView bindToBorders={true} maxZoom={3} minZoom={1}>
+              <Image source={require('../../assets/AlternateEvents.png')} style={calculatorStyles.alternateEventsImage}/>
+            </ReactNativeZoomableView>
+          </View>
+        </ChartModal>
+      </ScrollView>
+      <TotalBar total={totalScore} max={600} canSave={visibleSave} onSave={verifyLoggedIn} onClear={clearScore} compact={keyboardOpen}/>
+      {!keyboardOpen && <ACFTBannerAd/>}
+    </Container>
   )
 }
 

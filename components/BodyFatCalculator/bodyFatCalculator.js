@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { SafeAreaView, View, TouchableOpacity, Text, TextInput, Modal, ScrollView, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, Keyboard } from "react-native";
+import { SafeAreaView, View, TouchableOpacity, Text, ScrollView, Platform, KeyboardAvoidingView, Keyboard } from "react-native";
 import ACFTBannerAd from "../ACFTBannerAd";
 import { maleBodyFatCalculations } from "./CalculationDicts/maleBodyFatCalculations";
 import { femaleBodyFatCalculations } from "./CalculationDicts/femaleBodyFatCalculations";
 import { maleHeightWeightCalculations } from "./CalculationDicts/maleHeightWeightCalculations";
 import { femaleHeightWeightCalculations } from "./CalculationDicts/femaleHeightWeightCalculations";
-import { bodyFatCalculatorStyles } from './bodyFatCalculatorStyles';
+import { Card, ChartModal, Field, ResultRow, ScrollIntoViewContext, SectionLabel, Segmented, useKeepFocusedVisible } from '../ui';
+import { colors, font, space } from '../theme';
 
 export default function BodyFatCalculator(props) {
     const invalidParameters = "[Invalid input]"
@@ -23,6 +24,7 @@ export default function BodyFatCalculator(props) {
     const [keyboardOpen, setKeyboardOpen] = useState(false);
     
     const waistRef = useRef();
+    const weightRef = useRef();
     const heightRef = useRef();
 
     useEffect(() => {
@@ -87,172 +89,66 @@ export default function BodyFatCalculator(props) {
         }
     }
 
+    const { scrollProps, ensureVisible } = useKeepFocusedVisible();
     const Container = Platform.OS === 'ios' ? KeyboardAvoidingView : View;
 
+    const show = (value) => (value === invalidParameters || value === '' ? '—' : value)
+    const infoLink = (onPress) => (
+        <TouchableOpacity onPress={onPress} style={{paddingTop: space.md}}>
+            <Text style={{color: colors.gold, fontSize: 14}}>What inputs are valid?</Text>
+        </TouchableOpacity>
+    )
+
     return (
-        <SafeAreaView style={{flex: 1, backgroundColor: 'black'}}>
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-                <Container style={bodyFatCalculatorStyles.container1}
-                    behavior="padding">
-                    <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardDismissMode='none'>
-
-                    <View style={[bodyFatCalculatorStyles.maleFemaleContainer, {marginTop: keyboardOpen ? 10 : 25}]}>
-                        <TouchableOpacity 
-                            onPress={() => setIsMale(true)}
-                            style={isMale ? bodyFatCalculatorStyles.maleFemaleSelectedContainer : bodyFatCalculatorStyles.maleFemaleUnselectedContainer}
-                        >
-                            <Text style={isMale ? bodyFatCalculatorStyles.maleFemaleTextSelected : bodyFatCalculatorStyles.maleFemaleTextUnselected}>
-                                Male
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                            onPress={() => setIsMale(false)}
-                            style={isMale ? bodyFatCalculatorStyles.maleFemaleUnselectedContainer : bodyFatCalculatorStyles.maleFemaleSelectedContainer}
-                        >
-                            <Text style={isMale ? bodyFatCalculatorStyles.maleFemaleTextUnselected : bodyFatCalculatorStyles.maleFemaleTextSelected}>
-                                Female
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <Text style={bodyFatCalculatorStyles.headerText}>Height & Weight Acceptable Range</Text>
-
-                    <View style={bodyFatCalculatorStyles.fieldContainer}>
-                        <Text style={bodyFatCalculatorStyles.fieldText}>Age: </Text>
-                        <TextInput
-                            value={age}
-                            keyboardType='numeric'
-                            returnKeyType='next'
-                            style={bodyFatCalculatorStyles.input}
-                            placeholder={"17-99"}
-                            placeholderTextColor='gray'
-                            onChangeText={setAge}
-                            onSubmitEditing={() => heightRef.current.focus()}
+        <SafeAreaView style={{flex: 1, backgroundColor: colors.bg}}>
+            <Container style={{flex: 1}} behavior="padding">
+                <ScrollIntoViewContext.Provider value={ensureVisible}>
+                <ScrollView
+                    {...scrollProps}
+                    contentContainerStyle={{padding: space.lg}}
+                    keyboardShouldPersistTaps="handled"
+                    keyboardDismissMode="on-drag"
+                >
+                    <Card>
+                        <SectionLabel>Sex</SectionLabel>
+                        <Segmented
+                            options={[{value: true, label: 'Male'}, {value: false, label: 'Female'}]}
+                            value={isMale}
+                            onChange={setIsMale}
                         />
-                    </View>
+                    </Card>
 
-                    <View style={bodyFatCalculatorStyles.fieldContainer}>
-                        <Text style={bodyFatCalculatorStyles.fieldText}>Height: </Text>
-                        <TextInput
-                            value={height}
-                            ref={heightRef}
-                            keyboardType='numeric'
-                            returnKeyType='done'
-                            style={bodyFatCalculatorStyles.input}
-                            placeholder={"58-80"}
-                            placeholderTextColor='gray'
-                            onChangeText={setHeight}
-                        />
-                    </View>
+                    <Card>
+                        <Text style={font.heading}>Height & weight range</Text>
+                        <Field label="Age" value={age} onChangeText={setAge} placeholder="17-99"
+                            onSubmitEditing={() => heightRef.current.focus()}/>
+                        <Field label="Height (in)" value={height} onChangeText={setHeight} placeholder="58-80"
+                            inputRef={heightRef} onSubmitEditing={() => weightRef.current.focus()}/>
+                        <ResultRow label="Min weight" value={show(minWeight)}/>
+                        <ResultRow label="Max weight" value={show(maxWeight)}/>
+                        {minWeight === invalidParameters && infoLink(() => setDisplayHWValidParameters(true))}
+                    </Card>
 
-                    <View style={bodyFatCalculatorStyles.descriptionContainer}>
-                        <Text style={bodyFatCalculatorStyles.descriptionText}>
-                            Min Weight: {minWeight}
-                        </Text>
+                    <Card>
+                        <Text style={font.heading}>Body fat %</Text>
+                        <Field label="Weight (lbs)" value={weight} onChangeText={setWeight} placeholder="90-250"
+                            inputRef={weightRef} onSubmitEditing={() => waistRef.current.focus()}/>
+                        <Field label="Waist (in)" value={waistSize} onChangeText={setWaistSize} placeholder="25-55"
+                            inputRef={waistRef} returnKeyType="done"/>
+                        <ResultRow label="Body fat" value={show(bodyFatPercent)} large/>
+                        {bodyFatPercent === invalidParameters && infoLink(() => setDisplayValidParameters(true))}
+                    </Card>
 
-                        <View style={bodyFatCalculatorStyles.rowContainer}>
-                            <Text style={bodyFatCalculatorStyles.descriptionText}>
-                                Max Weight: {maxWeight}
-                            </Text>
-
-                            {minWeight === invalidParameters &&
-                                <TouchableOpacity onPress={() => setDisplayHWValidParameters(true)}>
-                                    <Text>ℹ️</Text>
-                                </TouchableOpacity>
-                            }
-                        </View>
-                        
-                    </View>
-
-                    <Modal
-                        transparent={true}
-                        visible={displayHWValidParameters}
-                        onRequestClose={() => setDisplayHWValidParameters(false)}
-                    >
-                        <View style={bodyFatCalculatorStyles.parametersModalOverlay}>
-                            <View style={bodyFatCalculatorStyles.parametersModalContent}>
-                                <Text>Age must be a whole number beteen 1 and 99. Height must be a whole number between 58 (60 for males) and 80.</Text>
-                                <TouchableOpacity style={bodyFatCalculatorStyles.button} onPress={() => setDisplayHWValidParameters(false)}>
-                                    <Text style={bodyFatCalculatorStyles.buttonText}>Close</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </Modal>  
-
-                    <Text style={bodyFatCalculatorStyles.headerText}>Body Fat % Calculator</Text>
-
-                    <View style={bodyFatCalculatorStyles.fieldContainer}>
-                        <Text style={bodyFatCalculatorStyles.fieldText}>Weight: </Text>
-                        <TextInput
-                            value={weight}
-                            keyboardType='numeric'
-                            returnKeyType='next'
-                            style={bodyFatCalculatorStyles.input}
-                            placeholder={"90-250"}
-                            placeholderTextColor='gray'
-                            onChangeText={setWeight}
-                            onSubmitEditing={() => waistRef.current.focus()}
-                        />
-                    </View>
-
-                    <View style={bodyFatCalculatorStyles.fieldContainer}>
-                        <Text style={bodyFatCalculatorStyles.fieldText}>Waist Size: </Text>
-                        <TextInput
-                            value={waistSize}
-                            ref={waistRef}
-                            keyboardType='numeric'
-                            returnKeyType='done'
-                            style={bodyFatCalculatorStyles.input}
-                            placeholder={"25-55 (0.5s)"}
-                            placeholderTextColor='gray'
-                            onChangeText={setWaistSize}
-                        />
-                    </View>
-
-                    <View style={bodyFatCalculatorStyles.descriptionContainer}>
-                        <View style={bodyFatCalculatorStyles.rowContainer}>
-                            <Text style={bodyFatCalculatorStyles.descriptionText}>Body Fat: {bodyFatPercent}</Text>
-                            {bodyFatPercent === invalidParameters &&
-                                <TouchableOpacity onPress={() => setDisplayValidParameters(true)}>
-                                    <Text>ℹ️</Text>
-                                </TouchableOpacity>
-                            }
-                        </View>
-                    </View>
-
-                    <Modal
-                        transparent={true}
-                        visible={displayValidParameters}
-                        onRequestClose={() => setDisplayValidParameters(false)}
-                    >
-                        <View style={bodyFatCalculatorStyles.parametersModalOverlay}>
-                            <View style={bodyFatCalculatorStyles.parametersModalContent}>
-                                <Text>Waist size must be a whole number or end in .5 and be between 25 and 55. Weight must be a whole number between 90 and 250.</Text>
-                                <TouchableOpacity style={bodyFatCalculatorStyles.button} onPress={() => setDisplayValidParameters(false)}>
-                                    <Text style={bodyFatCalculatorStyles.buttonText}>Close</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </Modal>         
-                    
-                
-                    <ACFTBannerAd/>
-                    </ScrollView>
-                </Container>
-            </TouchableWithoutFeedback>
+                    <ChartModal visible={displayHWValidParameters} onClose={() => setDisplayHWValidParameters(false)}>
+                        <Text style={font.body}>Age must be a whole number between 1 and 99. Height must be a whole number between 58 (60 for males) and 80.</Text>
+                    </ChartModal>
+                    <ChartModal visible={displayValidParameters} onClose={() => setDisplayValidParameters(false)}>
+                        <Text style={font.body}>Waist size must be a whole number or end in .5 and be between 25 and 55. Weight must be a whole number between 90 and 250.</Text>
+                    </ChartModal>
+                </ScrollView>
+                </ScrollIntoViewContext.Provider>
+                <ACFTBannerAd/>
+            </Container>
         </SafeAreaView>
     );
 }
-
-BodyFatCalculator.navigationOptions = screenProps => ({
-    title: "Body Fat Calculator",
-    headerStyle: {
-        backgroundColor: '#FEC029'
-    },
-    headerTintColor: '#000',
-    headerTitleStyle: {
-        fontWeight: 'bold',
-        fontSize: 24,
-        color: '#000'
-    }
-})

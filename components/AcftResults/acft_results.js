@@ -1,10 +1,44 @@
-import { Text, View, TouchableOpacity, SafeAreaView, FlatList } from 'react-native';
+import { Text, View, SafeAreaView, FlatList, StyleSheet } from 'react-native';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Dialog from 'react-native-dialog';
 import ACFTBannerAd from '../ACFTBannerAd';
 import { backendUrl } from '../constants';
-import acftResultsStyles from './acftResultsStyles';
+import Button from '../Button';
+import { Card, ScoreBadge } from '../ui';
+import { colors, font, radius, space } from '../theme';
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// AFT results store plain seconds. ACFT results saved by the app join "minutes * 60" and the seconds as text
+// (1:45 -> 6045), so they decode differently.
+const formatTime = (raw, standard) => {
+  const minutes = standard === 'AFT' ? Math.floor(raw / 60) : Math.floor(raw / 6000);
+  const seconds = raw % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+};
+
+const formatDate = (item) => `${MONTHS[item.month - 1] || item.month} ${item.day}, ${item.year}`;
+
+const eventsFor = (item) => {
+  const events = [
+    { label: 'Deadlift', raw: `${item.deadlift_raw} lbs`, score: item.deadlift_score },
+  ];
+  if (item.standard !== 'AFT') {
+    events.push({ label: 'Ball Throw', raw: `${item.spt_raw} m`, score: item.spt_score });
+  }
+  events.push(
+    { label: 'T-Push Ups', raw: `${item.pushups_raw} reps`, score: item.pushups_score },
+    { label: 'SDC', raw: formatTime(item.sdc_raw, item.standard), score: item.sdc_score },
+    { label: 'Plank', raw: formatTime(item.plank_raw, item.standard), score: item.plank_score },
+    { label: '2MR', raw: formatTime(item.tmr_raw, item.standard), score: item.tmr_score },
+  );
+  return events;
+};
+
+// Newest test first.
+const byDateDescending = (a, b) =>
+  (b.year - a.year) || (b.month - a.month) || (b.day - a.day) || (b.id - a.id);
 
 
 export default function ACFTResults(props) {
@@ -22,11 +56,12 @@ export default function ACFTResults(props) {
   }, [])
 
   const getData = async (first) => {
-    setToken( await AsyncStorage.getItem('MR_token') );
+    const storedToken = await AsyncStorage.getItem('MR_token');
+    setToken(storedToken);
     let id = await AsyncStorage.getItem('user_id');
     if (id) {
         if (first) {
-            setData(id)
+            setData(id, storedToken)
         }
     } else {
         console.log("No token")
@@ -34,18 +69,22 @@ export default function ACFTResults(props) {
     }
   };
 
-  const setData = (id) => {
+  const setData = (id, authToken) => {
     fetch(`${backendUrl}api/users/${id}/`, {
         method: 'GET',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${authToken}`
         }
     })
     .then( res => res.json())
-    .then( res => {
+    .then( async res => {
         if (res.username === undefined) {
-          alert("Couldn't get acft info")
-          props.navigation.navigate("Profile")
+          // Usually an expired or invalid login: clear it so the login screen doesn't bounce straight back.
+          await AsyncStorage.removeItem('MR_token');
+          await AsyncStorage.removeItem('user_id');
+          alert("Couldn't get your saved scores")
+          props.navigation.navigate("Auth")
         }
         else {
           setUsername(res.username)
@@ -107,93 +146,70 @@ export default function ACFTResults(props) {
   }
 
   return (
-    <SafeAreaView style={{flex: 1}}>
-        <View style={acftResultsStyles.container}>
-            <Dialog.Container visible={visible}>
-                <Dialog.Title>Confirm with Password</Dialog.Title>
-                <Dialog.Description>
-                Please input your password to delete this score.
-                </Dialog.Description>
-                <Dialog.Input placeholder={"Password"} onChangeText={passwordInput}/>
-                <Dialog.Button label="Cancel" onPress={() => setVisible(false)} />
-                <Dialog.Button label="Confirm" onPress={() => checkPassword()} />
-            </Dialog.Container>
+    <SafeAreaView style={{flex: 1, backgroundColor: colors.bg}}>
+      <Dialog.Container visible={visible}>
+        <Dialog.Title>Confirm with Password</Dialog.Title>
+        <Dialog.Description>
+          Please input your password to delete this score.
+        </Dialog.Description>
+        <Dialog.Input placeholder={"Password"} onChangeText={passwordInput}/>
+        <Dialog.Button label="Cancel" onPress={() => setVisible(false)} />
+        <Dialog.Button label="Confirm" onPress={() => checkPassword()} />
+      </Dialog.Container>
 
-            <FlatList
+      <FlatList
+        data={[...acftResults].sort(byDateDescending)}
+        keyExtractor={(item) => String(item.id)}
+        contentContainerStyle={{padding: space.lg}}
+        ListEmptyComponent={<Text style={[font.caption, {textAlign: 'center', marginTop: space.xl}]}>No saved scores yet.</Text>}
+        renderItem={({item}) => {
+          const isAft = item.standard === 'AFT';
+          return (
+            <Card>
+              <View style={styles.cardHeader}>
+                <View>
+                  <Text style={font.heading}>{formatDate(item)}</Text>
+                  <View style={styles.tag}>
+                    <Text style={styles.tagText}>{isAft ? 'AFT' : 'ACFT'}</Text>
+                  </View>
+                </View>
+                <Text style={styles.total}>
+                  {item.total_score}
+                  <Text style={styles.totalMax}> / {isAft ? 500 : 600}</Text>
+                </Text>
+              </View>
 
+              {eventsFor(item).map(event => (
+                <View key={event.label} style={styles.eventRow}>
+                  <Text style={[font.body, {flex: 1}]}>{event.label}</Text>
+                  <Text style={[font.caption, {marginRight: space.md}]}>{event.raw}</Text>
+                  <ScoreBadge score={event.score} entered={true}/>
+                </View>
+              ))}
 
-    data={acftResults}
-    renderItem={({item}) => (
-        <TouchableOpacity onPress={() => showDialog(item)} style={{margin: 10, borderColor: 'white', borderWidth: 2, backgroundColor: '#000'}}>
-            <View style={acftResultsStyles.rowContainer}>
-                <Text style={acftResultsStyles.item}>Total Score: {item.total_score}</Text>
-                <Text style={acftResultsStyles.item}>Date: {item.month}/{item.day}/{item.year}</Text>
-            </View>
-
-            <View style={acftResultsStyles.rowContainer}>
-                <Text style={acftResultsStyles.item}>Deadlift Raw: {item.deadlift_raw} lbs.</Text>
-                <Text style={acftResultsStyles.item}>Deadlift Score: {item.deadlift_score}</Text>
-            </View>
-
-            <View style={acftResultsStyles.rowContainer}>
-                <Text style={acftResultsStyles.item}>SPT Raw: {item.spt_raw} m</Text>
-                <Text style={acftResultsStyles.item}>SPT Score: {item.spt_score}</Text>
-            </View>
-
-            <View style={acftResultsStyles.rowContainer}>
-                <Text style={acftResultsStyles.item}>Push Up Raw: {item.pushups_raw}</Text>
-                <Text style={acftResultsStyles.item}>Push Up Score: {item.pushups_score}</Text>
-            </View>
-
-            <View style={acftResultsStyles.rowContainer}>
-                {item.sdc_raw%60 >= 10 ?
-                <Text style={acftResultsStyles.item}>SDC Raw: {Math.floor(item.sdc_raw/6000)}:{item.sdc_raw%60}</Text>
-                :
-                <Text style={acftResultsStyles.item}>SDC Raw: {Math.floor(item.sdc_raw/6000)}:0{item.sdc_raw%60}</Text>
-                }
-                <Text style={acftResultsStyles.item}>SDC Score: {item.sdc_score}</Text>
-            </View>
-
-            <View style={acftResultsStyles.rowContainer}>
-                {item.plank_raw%60 >= 10 ?
-                <Text style={acftResultsStyles.item}>Plank Raw: {Math.floor(item.plank_raw/6000)}:{item.plank_raw%60}</Text>
-                :
-                <Text style={acftResultsStyles.item}>Plank Raw: {Math.floor(item.plank_raw/6000)}:0{item.plank_raw%60}</Text>
-                }
-                <Text style={acftResultsStyles.item}>Plank Score: {item.plank_score}</Text>
-            </View>
-
-            <View style={acftResultsStyles.rowContainer}>
-                {item.tmr_raw%60 >= 10 ?
-                <Text style={acftResultsStyles.item}>2MR Raw: {Math.floor(item.tmr_raw/6000)}:{item.tmr_raw%60}</Text>
-                :
-                <Text style={acftResultsStyles.item}>2MR Raw: {Math.floor(item.tmr_raw/6000)}:0{item.tmr_raw%60}</Text>
-                }
-                <Text style={acftResultsStyles.item}>2MR Score: {item.tmr_score}</Text>
-            </View>
-
-        </TouchableOpacity>
-    )}
-    keyExtractor={(item, index) => index.toString()}
-
-                />
-            
-            </View>
-            <ACFTBannerAd/>
+              <Button variant="text" title="Delete" onPress={() => showDialog(item)}
+                textStyle={{color: colors.danger}} style={{alignSelf: 'flex-end', marginTop: space.sm}}/>
+            </Card>
+          );
+        }}
+      />
+      <ACFTBannerAd/>
     </SafeAreaView>
   );
 }
 
-ACFTResults.navigationOptions = screenProps => ({
-  title: "ACFT Scores",
-  headerStyle: {
-      backgroundColor: '#FEC029'
+const styles = StyleSheet.create({
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: space.sm },
+  tag: {
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surfaceAlt,
   },
-  headerTintColor: '#000',
-  headerTitleStyle: {
-      fontWeight: 'bold',
-      fontSize: 24,
-      color: '#000'
-  },
-  backgroundColor: '#000'
-})
+  tagText: { color: colors.textMuted, fontSize: 12, fontWeight: '700' },
+  total: { color: colors.gold, fontSize: 32, fontWeight: '800' },
+  totalMax: { color: colors.textMuted, fontSize: 16, fontWeight: '500' },
+  eventRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6 },
+});
