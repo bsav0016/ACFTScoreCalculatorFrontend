@@ -62,3 +62,7 @@ Official AFT scoring is a set of lookup charts by age bracket and sex or combat-
 - Standards are correct only as of the date shown in the app and must be updated by hand.
 - No automated tests for the scoring tables. <!-- TODO: how have you verified them (spot checks against the official charts?) -->
 - <!-- TODO: anything else users should know (ads, data you collect, support contact) -->
+
+## License
+
+MIT. See [LICENSE](LICENSE).
