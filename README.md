@@ -4,11 +4,9 @@ Mobile app that scores the U.S. Army Fitness Test (AFT, formerly the ACFT). Ente
 
 <p><img src="docs/screenshots/home.png" alt="Home screen" width="240"> <img src="docs/screenshots/calculator.png" alt="AFT calculator with scores entered" width="240"> <img src="docs/screenshots/goal-planner.png" alt="Goal planner" width="240"></p>
 
-<!-- TODO: add a screenshot of the percentile card (needs the backend running) -->
-
 ## Why it exists
 
-<!-- TODO: in your own words, why you built it (personal use as a soldier? a gap in existing calculators?) -->
+Scoring the Army Fitness Test means looking up each event's result in tables that depend on age, sex and standard, then adding the events up, and working out what you still need for a target total is more lookups. This app does the lookups on the device (so it works offline), shows each event score and the total, a goal planner for what each event needs to reach a target, and, with an account, how your score compares with other soldiers' saved results.
 
 ## Features
 
@@ -72,8 +70,7 @@ Official AFT scoring is a set of lookup charts by age bracket and sex or combat-
 ## Limitations
 
 - Standards are correct only as of the date shown in the app and must be updated by hand.
-- The tests pin the code to the committed tables; they do not re-check the tables against the official Army charts. <!-- TODO: how have you verified the tables themselves (spot checks against the official charts?) -->
-- <!-- TODO: anything else users should know (ads, data you collect, support contact) -->
+- The tests pin the code to the committed tables; they do not re-check the tables against the official Army charts.
 
 ## License
 
