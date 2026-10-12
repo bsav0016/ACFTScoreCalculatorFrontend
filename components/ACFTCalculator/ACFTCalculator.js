@@ -300,7 +300,7 @@ const ACFTCalculator = (props) => {
   };
 
   const getId = async () => {
-    id = await AsyncStorage.getItem('user_id')
+    const id = await AsyncStorage.getItem('user_id')
     return id
   };
 
