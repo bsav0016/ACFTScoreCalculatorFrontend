@@ -163,11 +163,22 @@ describe('rawNeeded (goal planner, table read backwards)', () => {
     expect(need.score).toBe(earns);
   });
 
-  test('out-of-order 2MR cell: 70 points in column 14 asks for the more lenient 71-point time', () => {
-    // Column 14 holds 21.667 for 70 points but 21.75 for the row above it, so 21.75 is the easiest way to 70+.
-    const need = rawNeeded(event('tmr'), 70, 14);
-    expect(need.raw).toBeCloseTo(21.75, 9);
-    expect(need.score).toBe(71);
+  test('women 47-51 on the 2MR: 70 points is 21:45 and 71 points is 21:40 (official chart)', () => {
+    // Column 14. These two rows were once swapped in the app; the official chart has 71 = 21:40 and 70 = 21:45.
+    const seventy = rawNeeded(event('tmr'), 70, 14);
+    expect(seventy.raw).toBeCloseTo(1305 / 60, 9);
+    expect(seventy.score).toBe(70);
+    const seventyOne = rawNeeded(event('tmr'), 71, 14);
+    expect(seventyOne.raw).toBeCloseTo(1300 / 60, 9);
+    expect(seventyOne.score).toBe(71);
+  });
+
+  test('women 57-61 on the 2MR: 19:15 earns 95 points (official chart)', () => {
+    // Column 18, rows 98-95 are 18:05, 18:22, 18:37, 19:15. This column was once copied from the 52-56 group.
+    expect(scoreFor(event('tmr'), min(19, 15), 18)).toBe(95);
+    expect(scoreFor(event('tmr'), min(19, 16), 18)).toBe(94);
+    expect(scoreFor(event('tmr'), min(18, 5), 18)).toBe(98);
+    expect(scoreFor(event('tmr'), min(18, 6), 18)).toBe(97);
   });
 
   test('a target above 100 has no answer', () => {
