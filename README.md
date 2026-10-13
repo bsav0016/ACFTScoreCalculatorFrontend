@@ -54,7 +54,7 @@ npm run build:check   # bundles the JavaScript for iOS and Android
 
 The same three run on every pull request (`.github/workflows/ci.yml`). They do not compile native code, so a green check does not prove an iOS or Android build will succeed; that is still done with EAS at release time.
 
-The scoring tests are in `tests/`: golden values read by hand from the table cells at each threshold and one step either side, an independent reference scorer checked against every table, column and boundary, structural checks on the tables themselves (including the known quirks), and the goal planner's reverse lookup. They never call the backend, and one test checks that scoring makes no network request.
+The scoring tests are in `tests/`: golden values read by hand from the table cells at each threshold and one step either side, an independent reference scorer checked against every table, column and boundary, structural checks on the tables themselves, a cell-by-cell comparison of all five tables with the Army's published chart (`tests/fixtures/aft-score-tables-250601.txt`, effective 1 June 2025), and the goal planner's reverse lookup. They never call the backend, and one test checks that scoring makes no network request.
 
 ## How the scoring works
 
@@ -70,7 +70,7 @@ Official AFT scoring is a set of lookup charts by age bracket and sex or combat-
 ## Limitations
 
 - Standards are correct only as of the date shown in the app and must be updated by hand.
-- The tests pin the code to the committed tables; they do not re-check the tables against the official Army charts.
+- The tables are checked against the Army chart effective 1 June 2025. When the Army publishes a new scale, add its figures as a new fixture, regenerate the tables, and point `tests/aftOfficialTables.test.js` at it.
 
 ## License
 

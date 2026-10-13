@@ -51,7 +51,7 @@ describe.each(EVENTS.map(event => [event.key, event]))('AFT %s table', (key, eve
     }
   });
 
-  test('requirements only get easier as points drop (apart from the known quirks)', () => {
+  test('requirements only get easier as points drop', () => {
     const outOfOrder = [];
     for (let col = 1; col <= 20; col++) {
       for (let i = 1; i < table.length; i++) {
@@ -61,16 +61,11 @@ describe.each(EVENTS.map(event => [event.key, event]))('AFT %s table', (key, eve
         if (event.above ? below > above : below < above) outOfOrder.push(`${table[i][0]} points, column ${col}`);
       }
     }
-    expect(outOfOrder).toEqual(KNOWN_OUT_OF_ORDER[key] || []);
+    expect(outOfOrder).toEqual([]);
   });
 });
 
-// Cells in the committed 2MR table that are slightly out of order. Pinned so any new one fails; if the table is
-// corrected, shrink this list. aftScoring.rawNeeded copes with them by taking the most lenient qualifying row.
-const KNOWN_OUT_OF_ORDER = {
-  tmr: ['70 points, column 14', '60 points, column 16'],
-};
-
+// The official chart prints the 60-point row twice (identical copies) on the SDC, plank and 2MR charts.
 test('the 2MR table has exactly one duplicated row (60 points), and the copies are identical', () => {
   const run = EVENTS.find(event => event.key === 'tmr').table;
   const sixties = run.filter(row => row[0] === 60);
