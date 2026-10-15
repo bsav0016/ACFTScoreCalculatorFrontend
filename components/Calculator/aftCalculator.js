@@ -8,7 +8,8 @@ import Dialog from 'react-native-dialog';
 import ReactNativeZoomableView from '@openspacelabs/react-native-zoomable-view/src/ReactNativeZoomableView';
 import Button from '../Button';
 import PercentileCard from './PercentileCard';
-import { Card, ChartModal, CompactInput, EventRow, InputRow, ScrollIntoViewContext, Segmented, TotalBar, useKeepFocusedVisible } from '../ui';
+import { Card, ChartModal, CompactInput, EventRow, InputRow, ScrollIntoViewContext, Segmented, Toast, TotalBar, useKeepFocusedVisible, useToast } from '../ui';
+import { describeSaveResult, validateTestDate } from './saveScore';
 import { colors, font, space } from '../theme';
 import { backendUrl } from '../constants';
 import calculatorStyles from './calculatorStyles';
@@ -39,7 +40,10 @@ const AFTCalculator = (props) => {
 
   const [visibleSave, setVisibleSave] = useState(false);
   const [visibleDate, setVisibleDate] = useState(false);
+  const [dateError, setDateError] = useState('');
   const [infoModalVisible, setInfoModalVisible] = useState(false);
+  const { toast, showToast, hideToast } = useToast();
+  const saving = useRef(false);
 
   const [month, setMonth] = useState(1);
   const [day, setDay] = useState(1);
@@ -267,6 +271,7 @@ const AFTCalculator = (props) => {
       askToLogin();
     }
     else{
+      setDateError('');
       setVisibleDate(true);
     }
   }
@@ -289,23 +294,19 @@ const AFTCalculator = (props) => {
   }
 
   const saveScore = () => {
-    if (isNaN(Number(day)) || day < 0 || Number.isInteger(day) || day > 31) {
-      alert("Day must be between 1 and 31");
+    // Shown inside the dialog: an alert() raised over a Modal can fail to appear on iOS, which looked like Confirm
+    // doing nothing.
+    const problem = validateTestDate({ day, month, year });
+    if (problem) {
+      setDateError(problem);
       return;
     }
-    else if (isNaN(Number(month)) || month < 1 || Number.isInteger(month) || month > 12) {
-      alert("Month must be between 1 and 12");
-      return;
-    }
-    else if (isNaN(Number(year)) || Number.isInteger(year) || year < 2022) {
-      alert("Year must be at least 2022");
-      return;
-    }
+    setDateError('');
     let data = {
       standard: 'AFT',
-      month: month,
-      day: day,
-      year: year,
+      month: Number(month),
+      day: Number(day),
+      year: Number(year),
       age: parseInt(ageText, 10),
       male_or_combat: isCombatMOS,
       deadlift_raw: Number(deadlift),
@@ -324,28 +325,35 @@ const AFTCalculator = (props) => {
     setVisibleDate(false);
   }
 
+  // Always ends in a toast: saved, the server's reason it was refused, or why the request never completed.
   const saveToDatabase = async (data) => {
-    const token = await getToken()
-    await fetch(`${backendUrl}/api/acft_scores/1/save_results/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Token ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({data})
-    })
-    .then( res => res.json())
-    .then( jsonRes => {
-      if (jsonRes.message !== 'Stored ACFT score') {
-        alert(jsonRes.message)
+    if (saving.current) return;
+    saving.current = true;
+    let result;
+    try {
+      const token = await getToken();
+      const res = await fetch(`${backendUrl}/api/acft_scores/1/save_results/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({data})
+      });
+      let body = null;
+      try {
+        body = await res.json();
+      } catch {
+        // Not JSON (for example an error page); describeSaveResult falls back to a generic message.
       }
-      else {
-        alert("Score successfully saved")
-      }
-    })
-    .catch( err => {
-      console.log(err)
-    })
+      result = describeSaveResult({ status: res.status, ok: res.ok, body });
+    } catch (err) {
+      console.log(err);
+      result = describeSaveResult({ networkError: true });
+    } finally {
+      saving.current = false;
+    }
+    showToast(result.message, result.type);
   }
   
   const timeFormat = (minutes, seconds) => {
@@ -504,6 +512,7 @@ const AFTCalculator = (props) => {
             <Dialog.Description>Year:</Dialog.Description>
             <Dialog.Input placeholder={"Year"} onChangeText={setYear}/>
           </View>
+          {dateError ? <Dialog.Description style={{color: colors.danger}}>{dateError}</Dialog.Description> : null}
           <Dialog.Button label="Cancel" onPress={() => setVisibleDate(false)} />
           <Dialog.Button label="Confirm" onPress={saveScore} />
         </Dialog.Container>
@@ -566,6 +575,7 @@ const AFTCalculator = (props) => {
       </ScrollView>
       <TotalBar total={totalScore} max={500} canSave={visibleSave} onSave={verifyLoggedIn} onClear={clearScore} compact={keyboardOpen}/>
       {!keyboardOpen && <ACFTBannerAd/>}
+      <Toast toast={toast} onHide={hideToast}/>
     </Container>
   )
 }
