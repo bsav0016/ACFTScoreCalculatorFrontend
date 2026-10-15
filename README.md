@@ -1,6 +1,6 @@
 # AFT Score Calculator
 
-Mobile app that scores the U.S. Army Fitness Test (AFT, formerly the ACFT). Enter your age, sex or combat-MOS standard, and your event results; it returns a score for each event and a total, and shows how that score compares with other users. Published on the iOS App Store as [Updated ACFT Score Calculator](https://apps.apple.com/us/app/updated-acft-score-calculator/id1619926227).
+Mobile app that scores the U.S. Army Fitness Test (AFT, formerly the ACFT). Enter your age, sex or combat-MOS standard, and your event results; it returns a score for each event and a total, and shows how that score compares with other users. Published on the iOS App Store as [AFT Score Calculator](https://apps.apple.com/us/app/updated-acft-score-calculator/id1619926227): a 4.8 average from 944 ratings (US storefront, checked 15 October 2026) and 84,000+ downloads (reported by the author; downloads are only visible in App Store Connect).
 
 <p><img src="docs/screenshots/home.png" alt="Home screen" width="240"> <img src="docs/screenshots/calculator.png" alt="AFT calculator with scores entered" width="240"> <img src="docs/screenshots/goal-planner.png" alt="Goal planner" width="240"></p>
 
@@ -10,7 +10,7 @@ Scoring the Army Fitness Test means looking up each event's result in tables tha
 
 ## Features
 
-- **AFT Calculator** – event scores and total for the current standards, plus a percentile card (see below)
+- **AFT Calculator** – event scores and total for the current standards, plus a percentile card (see [Percentiles](#percentiles))
 - **Goal Planner** – given the results you entered, works out what each event needs to reach a target total
 - **Waist-to-Height Ratio** – body-composition screening
 - **ACFT Calculator** and **Height/Weight & Body Fat %** – the earlier standards, kept for reference
@@ -24,7 +24,7 @@ The home screen states the standards are "Current as of 7 July 2026".
 - React Native 0.86 / Expo SDK 57 (JavaScript), React Navigation (native stack)
 - `expo-dev-client` for native builds, EAS for build and submit
 - `react-native-google-mobile-ads` for the banner ad
-- Talks to [ACFTScoreCalculatorBackend](https://github.com/bsav0016/ACFTScoreCalculatorBackend) for accounts, saved results and percentiles
+- Talks to a Django REST API (private repository) for accounts, saved results and percentiles
 
 ## Running it
 
@@ -60,12 +60,17 @@ The scoring tests are in `tests/`: golden values read by hand from the table cel
 
 Official AFT scoring is a set of lookup charts by age bracket and sex or combat-MOS standard. The charts are stored as arrays under `components/Calculator/AFTScores/` (and `components/ACFTCalculator/Scores/` for the old standard). The scripts in `pythonBuilderFiles/` turn charts pasted from the official tables into those arrays, so the data can be regenerated when the Army changes the standards.
 
+## Percentiles
+
+Once the five events are entered, the calculator ranks the score against other users' saved results. `components/Calculator/PercentileCard.js` calls the API's public `GET /api/acft_scores/percentiles/` as you type, so it works without an account. Requests are debounced (400 ms), abort after 8 seconds, and a newer request supersedes an older one that is still in flight. You choose what to compare against: age bracket, scoring standard (the "male or combat MOS" toggle) and combat MOS; the choice is remembered on the device.
+
+The server only returns a percentile when the comparison group has at least 20 people, so a narrow grouping cannot single anyone out; below that the card says "Not enough data yet". Each user counts once per group, using their latest result. If the request fails or times out, the card says so and the calculator keeps working.
+
 ## Design decisions
 
 - **Lookup tables, not formulas.** Scores are read from the official charts rather than approximated, so results match the published tables.
 - **Chart generation scripts.** Keeping the Python builders in the repo makes updating the tables a repeatable paste-and-run step.
-- **Offline-first calculators.** Scoring runs on the device; the server is only used for accounts, saved results and percentiles.
-- **Percentile requests have a timeout**, so a slow server doesn't block the calculator.
+- **Offline-first calculators.** Scoring runs on the device; the server is only used for accounts, saved results and percentiles, so a slow or unreachable server never blocks scoring.
 
 ## Limitations
 
