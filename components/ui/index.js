@@ -446,3 +446,5 @@ const styles = StyleSheet.create({
   resultValue: { color: colors.gold, fontSize: 20, fontWeight: '700' },
   resultValueLarge: { fontSize: 30, fontWeight: '800' },
 });
+
+export { Toast, useToast } from './Toast';
