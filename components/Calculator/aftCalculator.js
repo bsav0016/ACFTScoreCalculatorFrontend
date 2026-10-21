@@ -13,11 +13,7 @@ import { describeSaveResult, validateTestDate } from './saveScore';
 import { colors, font, space } from '../theme';
 import { backendUrl } from '../constants';
 import calculatorStyles from './calculatorStyles';
-import aftDeadliftScores from './AFTScores/deadliftScores';
-import aftPushupScores from './AFTScores/pushupScores';
-import aftPlankScores from './AFTScores/plankScores';
-import aftSDCScores from './AFTScores/SDCScores';
-import aftRunScores from './AFTScores/runScores';
+import { EVENTS, columnFor, scoreFor } from './aftScoring';
 
 
 const AFTCalculator = (props) => {
@@ -123,7 +119,7 @@ const AFTCalculator = (props) => {
       alert("Please enter a number for deadlift");
     }
     else {
-      const newDeadliftScore = calculateEventScore(deadlift, true, aftDeadliftScores);
+      const newDeadliftScore = calculateEventScore(deadlift, 'deadlift');
       setDeadliftScore(newDeadliftScore);
       if (deadlift.toString().length == 3) {
         pushupRef.current.focus()
@@ -141,7 +137,7 @@ const AFTCalculator = (props) => {
       alert("Please enter a number for push ups");
     }
     else {
-      const newPushupScore = calculateEventScore(pushups, true, aftPushupScores);
+      const newPushupScore = calculateEventScore(pushups, 'pushups');
       setPushupScore(newPushupScore);
       if (pushups.toString().length == 2) {
         sdcMinRef.current.focus()
@@ -160,7 +156,7 @@ const AFTCalculator = (props) => {
     }
     else {
       const sdcTime = timeFormat(sdcMin, sdcSec)
-      const newSDCScore = calculateEventScore(sdcTime, false, aftSDCScores)
+      const newSDCScore = calculateEventScore(sdcTime, 'sdc')
       setSDCScore(newSDCScore);
       sdcSecRef.current.focus()
     }
@@ -177,7 +173,7 @@ const AFTCalculator = (props) => {
     }
     else {
       const sdcTime = timeFormat(sdcMin, sdcSec)
-      const newSDCScore = calculateEventScore(sdcTime, false, aftSDCScores);
+      const newSDCScore = calculateEventScore(sdcTime, 'sdc');
       setSDCScore(newSDCScore);
       if (sdcSec.toString().length == 2) {
         plankMinRef.current.focus();
@@ -195,7 +191,7 @@ const AFTCalculator = (props) => {
       alert("Please enter a number");
     }
     else {
-      const newPlankScore = calculateEventScore(timeFormat(plankMin, plankSec), true, aftPlankScores);
+      const newPlankScore = calculateEventScore(timeFormat(plankMin, plankSec), 'plank');
       setPlankScore(newPlankScore);
       plankSecRef.current.focus()
     }
@@ -211,7 +207,7 @@ const AFTCalculator = (props) => {
       alert("Please enter a number");
     }
     else {
-      const newPlankScore = calculateEventScore(timeFormat(plankMin, plankSec), true, aftPlankScores);
+      const newPlankScore = calculateEventScore(timeFormat(plankMin, plankSec), 'plank');
       setPlankScore(newPlankScore);
       if (plankSec.toString().length == 2) {
         runMinRef.current.focus();
@@ -229,7 +225,7 @@ const AFTCalculator = (props) => {
       alert("Please enter a number");
     }
     else {
-      const newRunScore = calculateEventScore(timeFormat(runMin, runSec), false, aftRunScores);
+      const newRunScore = calculateEventScore(timeFormat(runMin, runSec), 'tmr');
       setRunScore(newRunScore);
       if (runMin.toString().length == 2) {
         runSecRef.current.focus();
@@ -247,7 +243,7 @@ const AFTCalculator = (props) => {
       alert("Please enter a number");
     }
     else {
-      const newRunScore = calculateEventScore(timeFormat(runMin, runSec), false, aftRunScores);
+      const newRunScore = calculateEventScore(timeFormat(runMin, runSec), 'tmr');
       setRunScore(newRunScore);
       if (runSec.toString().length == 2) {
         runSecRef.current.blur();
@@ -361,40 +357,12 @@ const AFTCalculator = (props) => {
     return formattedTime;
   }
   
-  const calculateEventScore = (input, above, scoresArray) => {
-    const ageGroups = [
-      { maxAge: 22, maleIndex: 1, femaleIndex: 2 },
-      { maxAge: 27, maleIndex: 3, femaleIndex: 4 },
-      { maxAge: 32, maleIndex: 5, femaleIndex: 6 },
-      { maxAge: 37, maleIndex: 7, femaleIndex: 8 },
-      { maxAge: 42, maleIndex: 9, femaleIndex: 10 },
-      { maxAge: 47, maleIndex: 11, femaleIndex: 12 },
-      { maxAge: 52, maleIndex: 13, femaleIndex: 14 },
-      { maxAge: 57, maleIndex: 15, femaleIndex: 16 },
-      { maxAge: 62, maleIndex: 17, femaleIndex: 18 },
-      { maxAge: Infinity, maleIndex: 19, femaleIndex: 20 }
-    ];
-  
-    const genderIndex = isCombatMOS ? 'maleIndex' : 'femaleIndex';
-    const comparison = above ? (a, b) => a >= b : (a, b) => a <= b;
-
-    let age;
-    try {
-      age = parseInt(ageText);
-    } catch {
-      age = 17;
-    }
-    for (const group of ageGroups) {
-      if (age < group.maxAge) {
-        const index = group[genderIndex];
-        for (const score of scoresArray) {
-          if (comparison(input, score[index])) {
-            return score[0];
-          }
-        }
-      }
-    }
-    return 0;
+  // Points for a raw result in this event, using the person's age and scoring column. No usable age scores 0.
+  const calculateEventScore = (input, eventKey) => {
+    const age = parseInt(ageText, 10);
+    if (isNaN(age)) return 0;
+    const event = EVENTS.find(e => e.key === eventKey);
+    return scoreFor(event, input, columnFor(age, isCombatMOS));
   }
 
   const clearScore = () => {
