@@ -62,6 +62,14 @@
         "android_app_id": "ca-app-pub-3407478259803394~3789192261",
         "ios_app_id": "ca-app-pub-3407478259803394~7728437270"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/408407da-8f59-48d4-9b52-e7ca21eb8c4c",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
     }
   },
   "react-native-google-mobile-ads": {
