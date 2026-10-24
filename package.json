@@ -9,7 +9,9 @@
     "web": "expo start --web",
     "test": "jest",
     "lint": "eslint .",
-    "build:check": "expo export --platform ios --platform android --output-dir dist"
+    "build:check": "expo export --platform ios --platform android --output-dir dist",
+    "update:preview": "node scripts/publish-update.js preview",
+    "update:production": "node scripts/publish-update.js production"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.6.0",

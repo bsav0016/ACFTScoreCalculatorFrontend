@@ -74,6 +74,7 @@ The app uses `expo-updates` (EAS Update) so a fix to the scoring tables or the a
 - **Runtime version:** the `appVersion` policy (`app.json`), so an update only reaches builds of the same app version. Anything that needs new native code (an SDK or native-module change) is a new version and a normal store release.
 - **Only builds that contain `expo-updates` receive updates.** Builds from before it was added keep working but never update this way.
 - `tests/updatesConfig.test.js` fails if this configuration is removed or the channels are mixed up.
+- **Publishing** is `npm run update:preview` (any clean branch, for a preview build) and `npm run update:production` (main only, exactly what is merged); both run the tests, lint and bundle check first. Rollback and the full steps are in [docs/RELEASING.md](docs/RELEASING.md).
 
 ## Design decisions
 
