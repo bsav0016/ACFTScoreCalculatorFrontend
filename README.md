@@ -66,6 +66,15 @@ Once the five events are entered, the calculator ranks the score against other u
 
 The server only returns a percentile when the comparison group has at least 20 people, so a narrow grouping cannot single anyone out; below that the card says "Not enough data yet". Each user counts once per group, using their latest result. If the request fails or times out, the card says so and the calculator keeps working.
 
+## Over-the-air updates
+
+The app uses `expo-updates` (EAS Update) so a fix to the scoring tables or the app's JavaScript can reach phones without a store release. On launch it checks for an update in the background, downloads it, and applies it the next time the app starts; it never reloads mid-calculation, and with no signal it just uses the code it already has.
+
+- **Channels:** builds made with the `production`, `preview` and `development` profiles in `eas.json` listen to the channel of the same name, so a preview build never receives a production update.
+- **Runtime version:** the `appVersion` policy (`app.json`), so an update only reaches builds of the same app version. Anything that needs new native code (an SDK or native-module change) is a new version and a normal store release.
+- **Only builds that contain `expo-updates` receive updates.** Builds from before it was added keep working but never update this way.
+- `tests/updatesConfig.test.js` fails if this configuration is removed or the channels are mixed up.
+
 ## Design decisions
 
 - **Lookup tables, not formulas.** Scores are read from the official charts rather than approximated, so results match the published tables.
