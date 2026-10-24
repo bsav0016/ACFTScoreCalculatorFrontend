@@ -14,7 +14,7 @@ import { isPlaceholder } from './helpers';
 // repos' tests, and rebuild the app's tables until test 2 passes again.
 
 const FILE = path.join(__dirname, '..', 'data', 'aft_tables_250601.json');
-const EXPECTED_SHA256 = '79d1d89256c2d7d1e3c03de3a877274a27a1bf0e881d34644a7f3ae60a4c7140';
+const EXPECTED_SHA256 = 'b39db97f38def5584cc40e3e14da903dc443569022f8b9d24e4ac4c148e824f0';
 
 const text = fs.readFileSync(FILE, 'utf8');
 const shared = JSON.parse(text);

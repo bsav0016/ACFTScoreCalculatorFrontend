@@ -1,5 +1,6 @@
 {
   "version": "250601",
+  "standards_as_of": "2026-07-07",
   "events": {
     "deadlift": {
       "unit": "lbs",
