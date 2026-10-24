@@ -1,8 +1,12 @@
 import { Text, SafeAreaView, ScrollView, Linking } from 'react-native';
+import Constants from 'expo-constants';
+import * as Updates from 'expo-updates';
 import ACFTBannerAd from '../ACFTBannerAd';
 import Button from '../Button';
 import { Card } from '../ui';
 import { colors, font, space } from '../theme';
+import { TABLE_VERSION } from '../Calculator/standards';
+import { describeBuild } from '../buildLabel';
 
 export default function About() {
 
@@ -32,6 +36,14 @@ export default function About() {
           <Button variant="text" title="Privacy Policy" onPress={() => openPrivacy()} style={{alignSelf: 'flex-start', paddingHorizontal: 0}} />
           <Button variant="text" title="Terms and Conditions" onPress={() => openTerms()} style={{alignSelf: 'flex-start', paddingHorizontal: 0}} />
         </Card>
+        <Text style={[font.caption, {textAlign: 'center', marginTop: space.md}]}>
+          {describeBuild({
+            appVersion: Constants.expoConfig?.version,
+            tableVersion: TABLE_VERSION,
+            updateId: Updates.isEmbeddedLaunch ? null : Updates.updateId,
+            updatesEnabled: Updates.isEnabled,
+          })}
+        </Text>
       </ScrollView>
       <ACFTBannerAd/>
     </SafeAreaView>

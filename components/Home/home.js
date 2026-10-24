@@ -4,6 +4,7 @@ import ACFTBannerAd from '../ACFTBannerAd';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MenuItem, SectionLabel } from '../ui';
 import { colors, font, space } from '../theme';
+import { standardsLine } from '../Calculator/standards';
 
 
 export default function Home(props) {
@@ -61,7 +62,7 @@ export default function Home(props) {
         />
         <MenuItem title="About" onPress={() => props.navigation.navigate("About")} />
 
-        <Text style={[font.caption, {textAlign: 'center', marginTop: space.xl}]}>Current as of 7 July 2026</Text>
+        <Text style={[font.caption, {textAlign: 'center', marginTop: space.xl}]}>{standardsLine()}</Text>
       </ScrollView>
       <ACFTBannerAd/>
     </SafeAreaView>
