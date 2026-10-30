@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Text, ActivityIndicator, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getSession, setSession } from "../session";
+import { newPasswordProblem, serverPasswordMessage } from "../passwordRules";
 import ACFTBannerAd from '../ACFTBannerAd';
 import Button from '../Button';
 import { backendUrl } from "../constants";
@@ -31,28 +32,27 @@ export default function Auth(props) {
 
     const login = async () => {
         setLoading(true)
-        await fetch(`${backendUrl}api/authenticate/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username: username, password: password })
-        })
-        .then( res => res.json())
-        .then( res => {
-            saveData(res.token, res.id)
-            if (res.token) {
+        try {
+            const res = await fetch(`${backendUrl}api/authenticate/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username: username, password: password })
+            })
+            const data = await res.json()
+            if (data.token) {
+                await setSession(data.token, data.id)
                 props.navigation.navigate("Profile")
             }
             else {
                 alert("Incorrect username or password");
             }
-            setLoading(false);
-        })
-        .catch( () => {
-            error => console.log(error)
-            setLoading(false)
-        })
+        } catch (error) {
+            console.log(error)
+            alert("Couldn't reach the server. Check your connection and try again.")
+        }
+        setLoading(false)
     }
 
     const auth = async () => {
@@ -67,16 +67,8 @@ export default function Auth(props) {
                 alert("Username field must not be more than 30 characters");
                 return;
             }
-            else if (password.length < 6) {
-                alert("Password must be at least 6 characters long. It is recommended you mix letters, digits, and special characters.");
-                return;
-            }
-            else if (password.length > 30) {
-                alert("Password must be no more than 30 characters.");
-                return;
-            }
-            else if (confirmPassword !== password) {
-                alert("Passwords must match");
+            else if (newPasswordProblem(password, confirmPassword)) {
+                alert(newPasswordProblem(password, confirmPassword));
                 return;
             }
             else if (reg.test(tempEmail) === false) {
@@ -116,11 +108,12 @@ export default function Auth(props) {
                 const data = await res.json()
                 if (!res.ok) {
                     console.log("Error response: ", data);
-                    console.log(data.email)
                     if (data.email && data.email[0].includes("user with this Email")) {
                         alert('Email already taken')
                     } else if (data.username && data.username[0].includes("user with this Username")) {
                         alert('Username already taken')
+                    } else if (data.password) {
+                        alert(serverPasswordMessage(data.password))
                     } else {
                         alert("Unknown error")
                     }
@@ -169,14 +162,8 @@ export default function Auth(props) {
         }
     }
 
-    const saveData = async (token, id) => {
-        await AsyncStorage.setItem('MR_token', token)
-        await AsyncStorage.setItem('user_id', id.toString())
-    }
-
     const getData = async () => {
-        const token = await AsyncStorage.getItem('MR_token');
-        if (token) {
+        if (await getSession()) {
             props.navigation.navigate("Profile")
         }
     }
@@ -259,6 +246,14 @@ export default function Auth(props) {
                 <ActivityIndicator size="large" color={colors.gold} style={{marginTop: space.lg}}/>
                 :
                 <Button title={regView ? "Register" : "Login"} onPress={() => auth()} style={{marginTop: space.sm}} />
+                }
+                {!regView &&
+                <Button
+                    variant="text"
+                    onPress={() => props.navigation.navigate("ForgotPassword")}
+                    title="Forgot your password?"
+                    style={{marginTop: space.sm}}
+                />
                 }
                 <Button
                     variant="text"

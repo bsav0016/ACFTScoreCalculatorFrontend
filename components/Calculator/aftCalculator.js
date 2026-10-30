@@ -3,7 +3,7 @@ import { Image, Text, View, KeyboardAvoidingView, Platform, Keyboard, TouchableO
 import ACFTBannerAd from "../ACFTBannerAd";
 import * as StoreReview from 'expo-store-review';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authFetch, getSession } from '../session';
 import Dialog from 'react-native-dialog';
 import ReactNativeZoomableView from '@openspacelabs/react-native-zoomable-view/src/ReactNativeZoomableView';
 import Button from '../Button';
@@ -11,7 +11,6 @@ import PercentileCard from './PercentileCard';
 import { Card, ChartModal, CompactInput, EventRow, InputRow, ScrollIntoViewContext, Segmented, Toast, TotalBar, useKeepFocusedVisible, useToast } from '../ui';
 import { describeSaveResult, validateTestDate } from './saveScore';
 import { colors, font, space } from '../theme';
-import { backendUrl } from '../constants';
 import calculatorStyles from './calculatorStyles';
 import { EVENTS, columnFor, scoreFor } from './aftScoring';
 
@@ -251,14 +250,9 @@ const AFTCalculator = (props) => {
     }
   }, [runSec, isCombatMOS])
 
-  const getToken = async () => {
-    const token = await AsyncStorage.getItem('MR_token');
-    return token;
-  };
-
   const getId = async () => {
-    const id = await AsyncStorage.getItem('user_id');
-    return id;
+    const session = await getSession();
+    return session ? session.id : null;
   };
 
   const verifyLoggedIn = async () => {
@@ -327,13 +321,8 @@ const AFTCalculator = (props) => {
     saving.current = true;
     let result;
     try {
-      const token = await getToken();
-      const res = await fetch(`${backendUrl}/api/acft_scores/1/save_results/`, {
+      const res = await authFetch('api/acft_scores/1/save_results/', {
         method: 'POST',
-        headers: {
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({data})
       });
       let body = null;

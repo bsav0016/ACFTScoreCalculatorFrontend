@@ -1,7 +1,7 @@
 import { Text, View, SafeAreaView, ScrollView } from 'react-native';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import ACFTBannerAd from '../ACFTBannerAd';
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { hasSession } from '../session';
 import { MenuItem, SectionLabel } from '../ui';
 import { colors, font, space } from '../theme';
 import { standardsLine } from '../Calculator/standards';
@@ -19,8 +19,7 @@ export default function Home(props) {
   }
 
   const clickProfile = async () => {
-    const token = await AsyncStorage.getItem('MR_token');
-    if (token) {
+    if (await hasSession()) {
       navigateProfile();
     } else {
       navigateLogin();

@@ -1,6 +1,7 @@
 import { Text, View, TextInput, Alert, TouchableOpacity, SafeAreaView, ScrollView, StyleSheet } from 'react-native';
 import { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authFetch, changePassword, clearSession, getSession, signOut as endSession } from '../session';
+import { newPasswordProblem, serverPasswordMessage } from '../passwordRules';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowRightFromBracket, faPenToSquare, faFloppyDisk, faRotateLeft, faTrash } from '@fortawesome/free-solid-svg-icons'
 import Dialog from 'react-native-dialog';
@@ -61,8 +62,13 @@ export default function Profile(props) {
   const [acftResults, setAcftResults] = useState([])
   const [paidFee, setPaidFee] = useState(false)
   const [visible, setVisible] = useState(false)
+  const [changeVisible, setChangeVisible] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
+  const [changeError, setChangeError] = useState('')
+  const [changing, setChanging] = useState(false)
 
-  var token = null;
   var id = null;
 
   useEffect(() => {
@@ -70,30 +76,24 @@ export default function Profile(props) {
   }, [])
 
   const getData = async (first) => {
-    token = await AsyncStorage.getItem('MR_token');
-    id = await AsyncStorage.getItem('user_id');
-    if (id === null) {
+    const session = await getSession();
+    if (session === null) {
         props.navigation.navigate("Auth")
         return
     }
+    id = session.id;
     if (first) {
       setData(id)
     }
   };
 
   const setData = async (id) => {
-    await fetch(`${backendUrl}api/users/${id}/`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Token ${token}`
-        }
-    })
+    // authFetch forgets the stored login on a 401 (ended or expired), so the login screen doesn't bounce straight back.
+    await authFetch(`api/users/${id}/`)
     .then( res => res.json())
     .then( async res => {
         if (res.username === undefined) {
-          // Usually an expired or invalid login. Clear it, or the login screen would send us straight back here.
-          await removeStorage()
+          await clearSession()
           alert("Couldn't get account info")
           props.navigation.navigate("Auth")
         }
@@ -113,13 +113,8 @@ export default function Profile(props) {
     .catch( error => console.log(error))
   }
 
-  const removeStorage = async () => {
-    await AsyncStorage.removeItem('MR_token');
-    await AsyncStorage.removeItem('user_id');
-  }
-
   const signOut = async () => {
-    await removeStorage();
+    await endSession();
     props.navigation.navigate("Auth");
   }
 
@@ -142,12 +137,8 @@ export default function Profile(props) {
 
   const deleteAccount = async () => {
     await getData(false)
-    fetch(`${backendUrl}api/users/${id}/`, {
+    authFetch(`api/users/${id}/`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Token ${token}`
-      }
     })
     .then( async res => {
       await signOut();
@@ -271,12 +262,8 @@ export default function Profile(props) {
   const saveInfo = async () => {
     await getData(false)    
     let tempEmail = email.replace(/\s+/g, '').toLowerCase()
-    fetch(`${backendUrl}api/users/${id}/`, {
+    authFetch(`api/users/${id}/`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Token ${token}`
-      },
       body: JSON.stringify({ username: username, password: password, first_name: firstName,
         last_name: lastName, email: tempEmail, acft_results: acftResults, paid_fee: paidFee })
     })
@@ -344,6 +331,55 @@ export default function Profile(props) {
     setVisible(false)
   }
 
+  const openChangePassword = () => {
+    setCurrentPassword('')
+    setNewPassword('')
+    setConfirmNewPassword('')
+    setChangeError('')
+    setChangeVisible(true)
+  }
+
+  // Problems are shown inside the dialog (an alert cannot appear over it on iOS) so what was typed is kept.
+  const submitChangePassword = async () => {
+    if (changing) return
+    if (!currentPassword) {
+      setChangeError('Enter your current password.')
+      return
+    }
+    const problem = newPasswordProblem(newPassword, confirmNewPassword)
+    if (problem) {
+      setChangeError(problem)
+      return
+    }
+    setChanging(true)
+    const result = await changePassword(currentPassword, newPassword)
+    setChanging(false)
+    if (result.ok) {
+      setChangeVisible(false)
+      alert("Password changed")
+    }
+    else if (result.kind === 'wrong_password') {
+      setChangeError('Your current password is not correct.')
+    }
+    else if (result.kind === 'weak') {
+      setChangeError(serverPasswordMessage(result.messages))
+    }
+    else if (result.kind === 'signed_out') {
+      setChangeVisible(false)
+      alert("Please sign in again.")
+      props.navigation.navigate("Auth")
+    }
+    else if (result.kind === 'throttled') {
+      setChangeError('Too many attempts. Try again in an hour.')
+    }
+    else if (result.kind === 'network') {
+      setChangeError("Couldn't reach the server. Check your connection and try again.")
+    }
+    else {
+      setChangeError('Something went wrong. Please try again.')
+    }
+  }
+
   const initials = `${(firstName || '').charAt(0)}${(lastName || '').charAt(0)}`.toUpperCase() || '?'
 
   return (
@@ -358,6 +394,21 @@ export default function Profile(props) {
           <Dialog.Input placeholder={"Password"} onChangeText={setPassword}/>
           <Dialog.Button label="Cancel" onPress={() => setVisible(false)} />
           <Dialog.Button label="Confirm" onPress={checkPassword} />
+        </Dialog.Container>
+
+        <Dialog.Container visible={changeVisible}>
+          <Dialog.Title>Change password</Dialog.Title>
+          <Dialog.Description>
+            {changeError || 'Enter your current password and a new one (at least 8 characters).'}
+          </Dialog.Description>
+          <Dialog.Input placeholder="Current password" secureTextEntry autoCapitalize="none"
+            value={currentPassword} onChangeText={setCurrentPassword}/>
+          <Dialog.Input placeholder="New password" secureTextEntry autoCapitalize="none"
+            value={newPassword} onChangeText={setNewPassword}/>
+          <Dialog.Input placeholder="Confirm new password" secureTextEntry autoCapitalize="none"
+            value={confirmNewPassword} onChangeText={setConfirmNewPassword}/>
+          <Dialog.Button label="Cancel" onPress={() => setChangeVisible(false)} />
+          <Dialog.Button label="Change" onPress={submitChangePassword} />
         </Dialog.Container>
 
         <View style={styles.header}>
@@ -391,10 +442,16 @@ export default function Profile(props) {
 
         <Button
           variant="secondary"
+          title="Change password"
+          onPress={openChangePassword}
+          style={{marginTop: space.md}}
+        />
+        <Button
+          variant="secondary"
           title="Sign out"
           onPress={signOut}
           icon={faArrowRightFromBracket}
-          style={{marginTop: space.md}}
+          style={{marginTop: space.sm}}
         />
         <Button
           variant="danger"

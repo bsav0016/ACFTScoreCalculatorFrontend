@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Profile from './components/Profile/profile';
 import About from './components/About/about';
 import Auth from './components/Auth/auth';
+import ForgotPassword from './components/Auth/ForgotPassword';
 import Home from './components/Home/home';
 import ACFTResults from './components/AcftResults/acft_results';
 import BodyFatCalculator from './components/BodyFatCalculator/bodyFatCalculator';
@@ -40,6 +41,7 @@ export default function App() {
         <Stack.Screen name="BodyFatCalculator" component={BodyFatCalculator} options={{ title: "H&W & Body Fat %" }} />
         <Stack.Screen name="WaistToHeightRatio" component={WaistToHeightRatio} options={{ title: "Waist-to-Height Ratio" }} />
         <Stack.Screen name="Auth" component={Auth} options={{ title: "Login" }}/>
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{ title: "Reset password" }}/>
         <Stack.Screen name="Profile" component={Profile} options={{ title: "Profile" }}/>
         <Stack.Screen name="About" component={About} options={{ title: "About" }} />
         <Stack.Screen name="ACFTResults" component={ACFTResults} options={{ title: "Saved Results" }}/>
