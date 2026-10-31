@@ -1,6 +1,6 @@
 import { Text, View, SafeAreaView, FlatList, StyleSheet } from 'react-native';
 import { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authFetch, getSession } from '../session';
 import Dialog from 'react-native-dialog';
 import ACFTBannerAd from '../ACFTBannerAd';
 import { backendUrl } from '../constants';
@@ -44,7 +44,6 @@ const byDateDescending = (a, b) =>
 export default function ACFTResults(props) {
 
   const [acftResults, setAcftResults] = useState([]);
-  const [token, setToken] = useState(null);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [itemNo, setItemNo] = useState(0);
@@ -56,33 +55,23 @@ export default function ACFTResults(props) {
   }, [])
 
   const getData = async (first) => {
-    const storedToken = await AsyncStorage.getItem('MR_token');
-    setToken(storedToken);
-    let id = await AsyncStorage.getItem('user_id');
-    if (id) {
+    const session = await getSession();
+    if (session) {
         if (first) {
-            setData(id, storedToken)
+            setData(session.id)
         }
     } else {
-        console.log("No token")
+        console.log("No login")
         props.navigation.navigate("Auth")
     }
   };
 
-  const setData = (id, authToken) => {
-    fetch(`${backendUrl}api/users/${id}/`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Token ${authToken}`
-        }
-    })
+  const setData = (id) => {
+    // authFetch forgets the stored login on a 401 (ended or expired), so the login screen doesn't bounce straight back.
+    authFetch(`api/users/${id}/`)
     .then( res => res.json())
     .then( async res => {
         if (res.username === undefined) {
-          // Usually an expired or invalid login: clear it so the login screen doesn't bounce straight back.
-          await AsyncStorage.removeItem('MR_token');
-          await AsyncStorage.removeItem('user_id');
           alert("Couldn't get your saved scores")
           props.navigation.navigate("Auth")
         }
@@ -122,12 +111,8 @@ export default function ACFTResults(props) {
             newAcftResults.push(acftResults[i])
         }
     }
-    fetch(`${backendUrl}api/acft_scores/${itemNo}/`, {
+    authFetch(`api/acft_scores/${itemNo}/`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Token ${token}`
-      },
     })
     .then( () => {
         setAcftResults(newAcftResults)
