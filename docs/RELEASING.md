@@ -16,6 +16,30 @@ An update is only delivered to builds with the **same app version** (`runtimeVer
 1. `npx eas-cli login` (your Expo account).
 2. The first build that can receive updates is a normal store build with `expo-updates` in it (version 3.3.0 or later). Builds from before it never update this way.
 
+## Releasing 3.3.0 (the first build that can receive updates)
+
+3.3.0 is a store release: it adds `expo-updates` and `expo-secure-store` (the sign-in token moves to the phone's secure storage) and the account screens (forgot password, change password). Builds before it never receive updates. Do these in order and stop at the first surprise.
+
+1. **Backend first.** Nothing to do: the account endpoints, the reset emails and the token expiry are already live, and the shipped builds keep working against them.
+2. **Build and test before anyone sees it.**
+   ```
+   npx eas-cli login
+   npx eas-cli build --platform ios --profile production
+   npx eas-cli build --platform android --profile production
+   ```
+   If the build asks about the version, check that it is 3.3.0 with iOS build 41 and Android versionCode 16 (`app.json`); a store will refuse a build number it has already seen.
+3. **iOS: TestFlight.** `npx eas-cli submit --platform ios --profile production` sends the build to App Store Connect. Install it from TestFlight **on a phone that already has the current App Store version and is signed in**, then run the checks below. Only then submit it for App Review.
+4. **Android: internal testing.** Upload the build to a Play Console internal testing track (or `eas submit --platform android` if a Google service-account key is set up) and install it over the current Play version. Promote to production after the checks below.
+5. **Checks on each phone** (these are what the automated tests cannot cover):
+   - Installed over the old version, you are **still signed in** (the login moved to secure storage).
+   - Sign out, then sign in again.
+   - Login screen, "Forgot your password?": request a code, read the email (check spam), enter the code and a new password, sign in with it.
+   - Profile, "Change password": change it, sign out, sign in with the new one.
+   - Calculate and save a score; open Saved Results.
+   - Start the app with the phone in airplane mode: it opens, calculators work, saving says it could not reach the server.
+   - About screen shows the 3.3.0 build details.
+6. **After release**, publish the current code to the preview channel first to confirm the update path works end to end (`npm run update:preview`), then follow "Publishing" below for real fixes.
+
 ## Publishing a JavaScript or table fix
 
 1. Make the change on a branch and open a PR as usual (CI runs the scoring tests, lint and a bundle check).
