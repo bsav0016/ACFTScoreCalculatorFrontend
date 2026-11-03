@@ -6,7 +6,6 @@ import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import { authFetch, getSession } from '../session';
 import Dialog from 'react-native-dialog';
 import ReactNativeZoomableView from '@openspacelabs/react-native-zoomable-view/src/ReactNativeZoomableView';
-import Button from '../Button';
 import PercentileCard from './PercentileCard';
 import { Card, ChartModal, CompactInput, EventRow, InputRow, ScrollIntoViewContext, Segmented, Toast, TotalBar, useKeepFocusedVisible, useToast } from '../ui';
 import { describeSaveResult, validateTestDate } from './saveScore';
@@ -122,7 +121,7 @@ const AFTCalculator = (props) => {
     else {
       const newDeadliftScore = calculateEventScore(deadlift, 'deadlift');
       setDeadliftScore(newDeadliftScore);
-      if (deadlift.toString().length == 3) {
+      if (deadlift.toString().length === 3) {
         pushupRef.current.focus()
       }
     }
@@ -140,7 +139,7 @@ const AFTCalculator = (props) => {
     else {
       const newPushupScore = calculateEventScore(pushups, 'pushups');
       setPushupScore(newPushupScore);
-      if (pushups.toString().length == 2) {
+      if (pushups.toString().length === 2) {
         sdcMinRef.current.focus()
       }
     }
@@ -176,7 +175,7 @@ const AFTCalculator = (props) => {
       const sdcTime = timeFormat(sdcMin, sdcSec)
       const newSDCScore = calculateEventScore(sdcTime, 'sdc');
       setSDCScore(newSDCScore);
-      if (sdcSec.toString().length == 2) {
+      if (sdcSec.toString().length === 2) {
         plankMinRef.current.focus();
       }
     }
@@ -210,7 +209,7 @@ const AFTCalculator = (props) => {
     else {
       const newPlankScore = calculateEventScore(timeFormat(plankMin, plankSec), 'plank');
       setPlankScore(newPlankScore);
-      if (plankSec.toString().length == 2) {
+      if (plankSec.toString().length === 2) {
         runMinRef.current.focus();
       }
     }
@@ -228,7 +227,7 @@ const AFTCalculator = (props) => {
     else {
       const newRunScore = calculateEventScore(timeFormat(runMin, runSec), 'tmr');
       setRunScore(newRunScore);
-      if (runMin.toString().length == 2) {
+      if (runMin.toString().length === 2) {
         runSecRef.current.focus();
       }
     }
@@ -246,7 +245,7 @@ const AFTCalculator = (props) => {
     else {
       const newRunScore = calculateEventScore(timeFormat(runMin, runSec), 'tmr');
       setRunScore(newRunScore);
-      if (runSec.toString().length == 2) {
+      if (runSec.toString().length === 2) {
         runSecRef.current.blur();
       }
     }

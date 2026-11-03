@@ -129,7 +129,7 @@ const ACFTCalculator = (props) => {
       alert("Age must be a non-negative number");
       setAge(0);
     }
-    else if (age.toString().length == 2) {
+    else if (age.toString().length === 2) {
       deadliftRef.current.focus()
     }
   }, [age])
@@ -146,7 +146,7 @@ const ACFTCalculator = (props) => {
     else {
       const newDeadliftScore = calculateEventScore(deadlift, true, deadliftScores);
       setDeadliftScore(newDeadliftScore);
-      if (deadlift.toString().length == 3) {
+      if (deadlift.toString().length === 3) {
         ballThrowRef.current.focus()
       }
     }
@@ -165,8 +165,8 @@ const ACFTCalculator = (props) => {
       const newBallThrowScore = calculateEventScore(ballThrow, true, ballThrowScores);
       setBallThrowScore(newBallThrowScore);
       const splitBallThrow = ballThrow.toString().split('.')
-      if (splitBallThrow.length == 2) {
-        if (splitBallThrow[1].length == 1) {
+      if (splitBallThrow.length === 2) {
+        if (splitBallThrow[1].length === 1) {
           pushupRef.current.focus()
         }
       }
@@ -185,7 +185,7 @@ const ACFTCalculator = (props) => {
     else {
       const newPushupScore = calculateEventScore(pushups, true, pushupScores);
       setPushupScore(newPushupScore);
-      if (pushups.toString().length == 2) {
+      if (pushups.toString().length === 2) {
         sdcMinRef.current.focus()
       }
     }
@@ -221,7 +221,7 @@ const ACFTCalculator = (props) => {
       const sdcTime = timeFormat(sdcMin, sdcSec);
       const newSDCScore = calculateEventScore(sdcTime, false, SDCScores);
       setSDCScore(newSDCScore);
-      if (sdcSec.toString().length == 2) {
+      if (sdcSec.toString().length === 2) {
         plankMinRef.current.focus();
       }
     }
@@ -255,7 +255,7 @@ const ACFTCalculator = (props) => {
     else {
       const newPlankScore = calculateEventScore(timeFormat(plankMin, plankSec), true, plankScores);
       setPlankScore(newPlankScore);
-      if (plankSec.toString().length == 2) {
+      if (plankSec.toString().length === 2) {
         runMinRef.current.focus()
       }
     }
@@ -273,7 +273,7 @@ const ACFTCalculator = (props) => {
     else {
       const newRunScore = calculateEventScore(timeFormat(runMin, runSec), false, runScores);
       setRunScore(newRunScore);
-      if (runMin.toString().length == 2) {
+      if (runMin.toString().length === 2) {
         runSecRef.current.focus()
       }
     }
@@ -291,7 +291,7 @@ const ACFTCalculator = (props) => {
     else {
       const newRunScore = calculateEventScore(timeFormat(runMin, runSec), false, runScores);
       setRunScore(newRunScore);
-      if (runSec.toString().length == 2) {
+      if (runSec.toString().length === 2) {
         runSecRef.current.blur()
       }
     }

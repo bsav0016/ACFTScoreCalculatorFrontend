@@ -24,7 +24,7 @@ export default function WaistToHeightRatio(props) {
     const [avgWaist, setAvgWaist] = useState(invalidParameters);
     const [ratio, setRatio] = useState(invalidParameters);
 
-    const [keyboardOpen, setKeyboardOpen] = useState(false);
+    const [, setKeyboardOpen] = useState(false);
 
     const waist1Ref = useRef();
     const waist2Ref = useRef();
