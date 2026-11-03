@@ -12,6 +12,8 @@ import { Card, ChartModal, CompactInput, EventRow, InputRow, ScrollIntoViewConte
 import { describeSaveResult, validateTestDate } from './saveScore';
 import { colors, font, space } from '../theme';
 import calculatorStyles from './calculatorStyles';
+import SourceNote from '../SourceNote';
+import { SOURCES } from '../sources';
 import { EVENTS, columnFor, scoreFor } from './aftScoring';
 
 
@@ -529,6 +531,7 @@ const AFTCalculator = (props) => {
             </ReactNativeZoomableView>
           </View>
         </ChartModal>
+        <SourceNote sources={[SOURCES.aft]}/>
       </ScrollView>
       <TotalBar total={totalScore} max={500} canSave={visibleSave} onSave={verifyLoggedIn} onClear={clearScore} compact={keyboardOpen}/>
       {!keyboardOpen && <ACFTBannerAd/>}
