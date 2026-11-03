@@ -9,7 +9,7 @@ import ACFTBannerAd from '../ACFTBannerAd';
 import Button from '../Button';
 import { backendUrl } from '../constants';
 import { Card, inputStyle } from '../ui';
-import { colors, font, radius, space } from '../theme';
+import { colors, font, space } from '../theme';
 
 
 // One account field: shows the value with a pencil, or an input with save / undo while editing.
@@ -69,7 +69,7 @@ export default function Profile(props) {
   const [changeError, setChangeError] = useState('')
   const [changing, setChanging] = useState(false)
 
-  var id = null;
+  let id = null;
 
   useEffect(() => {
     getData(true)

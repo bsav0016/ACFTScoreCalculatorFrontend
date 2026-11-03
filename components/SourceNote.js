@@ -1,4 +1,4 @@
-import { Linking, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, Text, TouchableOpacity } from 'react-native';
 import { Card } from './ui';
 import { colors, font, space } from './theme';
 import { DISCLAIMER } from './sources';

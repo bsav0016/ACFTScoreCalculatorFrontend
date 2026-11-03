@@ -23,7 +23,7 @@ export default function BodyFatCalculator(props) {
     const [maxWeight, setMaxWeight] = useState(invalidParameters);
     const [minWeight, setMinWeight] = useState(invalidParameters);
 
-    const [keyboardOpen, setKeyboardOpen] = useState(false);
+    const [, setKeyboardOpen] = useState(false);
     
     const waistRef = useRef();
     const weightRef = useRef();
