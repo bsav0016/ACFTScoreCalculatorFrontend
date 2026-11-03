@@ -7,6 +7,8 @@ import { Card } from '../ui';
 import { colors, font, space } from '../theme';
 import { TABLE_VERSION } from '../Calculator/standards';
 import { describeBuild } from '../buildLabel';
+import SourceNote from '../SourceNote';
+import { SOURCES } from '../sources';
 
 export default function About() {
 
@@ -36,6 +38,7 @@ export default function About() {
           <Button variant="text" title="Privacy Policy" onPress={() => openPrivacy()} style={{alignSelf: 'flex-start', paddingHorizontal: 0}} />
           <Button variant="text" title="Terms and Conditions" onPress={() => openTerms()} style={{alignSelf: 'flex-start', paddingHorizontal: 0}} />
         </Card>
+        <SourceNote sources={[SOURCES.aft, SOURCES.whtr, SOURCES.abcpFaq, SOURCES.ar600_9]}/>
         <Text style={[font.caption, {textAlign: 'center', marginTop: space.md}]}>
           {describeBuild({
             appVersion: Constants.expoConfig?.version,

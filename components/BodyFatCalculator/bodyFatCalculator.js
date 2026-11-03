@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { SafeAreaView, View, TouchableOpacity, Text, ScrollView, Platform, KeyboardAvoidingView, Keyboard } from "react-native";
 import ACFTBannerAd from "../ACFTBannerAd";
+import SourceNote from '../SourceNote';
+import { SOURCES } from '../sources';
 import { maleBodyFatCalculations } from "./CalculationDicts/maleBodyFatCalculations";
 import { femaleBodyFatCalculations } from "./CalculationDicts/femaleBodyFatCalculations";
 import { maleHeightWeightCalculations } from "./CalculationDicts/maleHeightWeightCalculations";
@@ -138,6 +140,8 @@ export default function BodyFatCalculator(props) {
                         <ResultRow label="Body fat" value={show(bodyFatPercent)} large/>
                         {bodyFatPercent === invalidParameters && infoLink(() => setDisplayValidParameters(true))}
                     </Card>
+
+                    <SourceNote sources={[SOURCES.ar600_9, SOURCES.abcpFaq]}/>
 
                     <ChartModal visible={displayHWValidParameters} onClose={() => setDisplayHWValidParameters(false)}>
                         <Text style={font.body}>Age must be a whole number between 1 and 99. Height must be a whole number between 58 (60 for males) and 80.</Text>

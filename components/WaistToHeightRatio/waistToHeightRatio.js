@@ -3,6 +3,8 @@ import { SafeAreaView, View, Text, ScrollView, Platform, KeyboardAvoidingView, K
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import ACFTBannerAd from "../ACFTBannerAd";
+import SourceNote from '../SourceNote';
+import { SOURCES } from '../sources';
 import { Card, Field, ResultRow, ScrollIntoViewContext, useKeepFocusedVisible } from '../ui';
 import { colors, font, radius, space } from '../theme';
 
@@ -128,6 +130,8 @@ export default function WaistToHeightRatio(props) {
                             </View>
                         }
                     </Card>
+
+                    <SourceNote sources={[SOURCES.whtr, SOURCES.abcpFaq]}/>
                 </ScrollView>
                 </ScrollIntoViewContext.Provider>
                 <ACFTBannerAd/>
