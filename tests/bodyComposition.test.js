@@ -1,5 +1,5 @@
 import anchors from './fixtures/body-fat-anchors.json';
-import { bodyFatPercent, BodyCompositionError } from '../components/BodyFatCalculator/bodyComposition';
+import { assessBodyFat, bodyFatLimit, bodyFatPercent, BodyCompositionError } from '../components/BodyFatCalculator/bodyComposition';
 
 // Values copied from the lookup tables this module replaced (see the fixture's note). The module was checked against
 // every cell of both tables before they were deleted; these anchors keep corners, the "<10"/">60" boundaries and the
@@ -58,5 +58,33 @@ describe('input validation', () => {
     expect(errorOf({ isMale: true, weight: 150, waist: 50 })).toBeNull();
     expect(errorOf({ isMale: false, weight: 150, waist: 45 })).toBeNull();
     expect(errorOf({ isMale: false, weight: 150, waist: 45.5 })).toMatchObject({ field: 'waist', code: 'out-of-range' });
+  });
+});
+
+describe('allowable body-fat limit', () => {
+  const limits = (isMale) => [17, 20, 21, 27, 28, 39, 40, 99].map((age) => bodyFatLimit({ isMale, age: String(age) }));
+
+  test('male and female limits by age band', () => {
+    expect(limits(true)).toEqual([20, 20, 22, 22, 24, 24, 26, 26]);
+    expect(limits(false)).toEqual([30, 30, 32, 32, 34, 34, 36, 36]);
+  });
+
+  test('limit needs a valid age', () => {
+    expect(() => bodyFatLimit({ isMale: true, age: '' })).toThrow(BodyCompositionError);
+    expect(() => bodyFatLimit({ isMale: true, age: '100' })).toThrow(BodyCompositionError);
+  });
+
+  test('withinLimit is true at the limit and false above it', () => {
+    // male 180 lb / 34.5 in = 20%
+    const at = assessBodyFat({ isMale: true, age: '20', weight: 180, waist: 34.5 });
+    expect(at).toMatchObject({ percent: 20, limit: 20, withinLimit: true });
+    const over = assessBodyFat({ isMale: true, age: '20', weight: 180, waist: 35 });
+    expect(over).toMatchObject({ percent: 21, limit: 20, withinLimit: false });
+    expect(assessBodyFat({ isMale: true, age: '21', weight: 180, waist: 35 }).withinLimit).toBe(true);
+  });
+
+  test('a ">60" result is over every limit and "<10" is within', () => {
+    expect(assessBodyFat({ isMale: true, age: '45', weight: 90, waist: 55 })).toMatchObject({ display: '>60', withinLimit: false });
+    expect(assessBodyFat({ isMale: true, age: '45', weight: 250, waist: 25 })).toMatchObject({ display: '<10', withinLimit: true });
   });
 });

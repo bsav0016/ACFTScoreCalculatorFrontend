@@ -1,0 +1,13 @@
+{
+  "source": {
+    "title": "AR 600-9, The Army Body Composition Program: maximum allowable body fat (\"earlier standard\")",
+    "publisher": "U.S. Army Publishing Directorate",
+    "url": "https://armypubs.army.mil",
+    "note": "Entered from memory of the published standard; NOT yet checked against the current regulation edition. Confirm before relying on the pass/fail line."
+  },
+  "unit": "percent body fat",
+  "ageBands": ["17-20", "21-27", "28-39", "40+"],
+  "maxAgeOfBand": [20, 27, 39, 99],
+  "male": [20, 22, 24, 26],
+  "female": [30, 32, 34, 36]
+}

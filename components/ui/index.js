@@ -87,26 +87,29 @@ export function SectionLabel({ children, style }) {
 
 // A labelled numeric input on one row: label on the left, input on the right.
 export function Field({ label, value, onChangeText, placeholder, keyboardType = numericKeyboard, inputRef,
-  onSubmitEditing, returnKeyType = 'next', secureTextEntry, autoCapitalize }) {
+  onSubmitEditing, returnKeyType = 'next', secureTextEntry, autoCapitalize, error }) {
   const focus = useFocusReporter();
   return (
-    <View style={styles.fieldRow} onLayout={focus.onLayout}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      <TextInput
-        ref={inputRef}
-        onFocus={focus.onFocus}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={colors.textMuted}
-        keyboardType={keyboardType}
-        returnKeyType={returnKeyType}
-        blurOnSubmit={returnKeyType !== 'next'}
-        onSubmitEditing={onSubmitEditing}
-        secureTextEntry={secureTextEntry}
-        autoCapitalize={autoCapitalize}
-        style={[styles.input, styles.fieldInput]}
-      />
+    <View onLayout={focus.onLayout}>
+      <View style={styles.fieldRow}>
+        <Text style={styles.fieldLabel}>{label}</Text>
+        <TextInput
+          ref={inputRef}
+          onFocus={focus.onFocus}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={colors.textMuted}
+          keyboardType={keyboardType}
+          returnKeyType={returnKeyType}
+          blurOnSubmit={returnKeyType !== 'next'}
+          onSubmitEditing={onSubmitEditing}
+          secureTextEntry={secureTextEntry}
+          autoCapitalize={autoCapitalize}
+          style={[styles.input, styles.fieldInput, error && { borderColor: colors.danger }]}
+        />
+      </View>
+      {error ? <Text style={[font.caption, { color: colors.danger, marginTop: 4 }]}>{error}</Text> : null}
     </View>
   );
 }
