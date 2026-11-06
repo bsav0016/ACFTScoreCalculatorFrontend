@@ -3,9 +3,7 @@ import { SafeAreaView, View, TouchableOpacity, Text, ScrollView, Platform, Keybo
 import ACFTBannerAd from "../ACFTBannerAd";
 import SourceNote from '../SourceNote';
 import { SOURCES } from '../sources';
-import { bodyFatPercent as estimateBodyFat, BodyCompositionError } from "./bodyComposition";
-import { maleHeightWeightCalculations } from "./CalculationDicts/maleHeightWeightCalculations";
-import { femaleHeightWeightCalculations } from "./CalculationDicts/femaleHeightWeightCalculations";
+import { bodyFatPercent as estimateBodyFat, screeningWeights, BodyCompositionError } from "./bodyComposition";
 import { Card, ChartModal, Field, ResultRow, ScrollIntoViewContext, SectionLabel, Segmented, useKeepFocusedVisible } from '../ui';
 import { colors, font, space } from '../theme';
 
@@ -64,22 +62,11 @@ export default function BodyFatCalculator(props) {
 
     const calculateWeights = () => {
         try {
-            const parsedAge = parseInt(age);
-            const maxAge = parsedAge <= 20 ? 20
-                : parsedAge <= 27 ? 27
-                : parsedAge <= 39 ? 39
-                : 99
-            const parsedHeight = parseInt(height);
-            const newMinWeight = isMale ? maleHeightWeightCalculations[parsedHeight][0]
-                : femaleHeightWeightCalculations[parsedHeight][0];
-            const newMaxWeight = isMale ? maleHeightWeightCalculations[parsedHeight][maxAge]
-                : femaleHeightWeightCalculations[parsedHeight][maxAge]
-            if (!newMinWeight || !newMaxWeight) {
-                throw new Error('Invalid parameters');
-            }
-            setMinWeight(newMinWeight);
-            setMaxWeight(newMaxWeight);
-        } catch {
+            const { min, max } = screeningWeights({ isMale, age, height });
+            setMinWeight(String(min));
+            setMaxWeight(String(max));
+        } catch (error) {
+            if (!(error instanceof BodyCompositionError)) throw error;
             setMinWeight(invalidParameters);
             setMaxWeight(invalidParameters);
         }

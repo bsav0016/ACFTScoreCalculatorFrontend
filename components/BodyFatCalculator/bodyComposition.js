@@ -1,3 +1,5 @@
+import screeningTable from '../../data/height_weight_screening.json';
+
 // Army body-fat estimate from weight and abdominal (waist) circumference. These are the linear formulas the published
 // tables were generated from; tests/bodyComposition.test.js checks them against every cell of the old lookup tables.
 const FORMULAS = {
@@ -68,4 +70,39 @@ export function bodyFatPercent({ isMale, weight, waist }) {
         : percent > BODY_FAT_CEILING ? `>${BODY_FAT_CEILING}`
         : String(percent);
     return { percent, display };
+}
+
+export const AGE_RANGE = { min: 1, max: 99 };
+const MIN_HEIGHT = { male: 60, female: 58 };
+export const MAX_HEIGHT = 80;
+// Upper age of each maximum-weight column, in the order the table lists them after the minimum weight.
+const AGE_BAND_LIMITS = [20, 27, 39];
+
+export function parseAge(input) {
+    const age = parseNumber('age', input);
+    if (!Number.isInteger(age)) throw new BodyCompositionError('age', 'not-whole', 'Age must be a whole number.');
+    if (age < AGE_RANGE.min || age > AGE_RANGE.max) {
+        throw new BodyCompositionError('age', 'out-of-range', `Age must be between ${AGE_RANGE.min} and ${AGE_RANGE.max}.`);
+    }
+    return age;
+}
+
+export function parseHeight(input, isMale) {
+    const height = parseNumber('height', input);
+    if (!Number.isInteger(height)) throw new BodyCompositionError('height', 'not-whole', 'Height must be a whole number of inches.');
+    const min = MIN_HEIGHT[isMale ? 'male' : 'female'];
+    if (height < min || height > MAX_HEIGHT) {
+        throw new BodyCompositionError('height', 'out-of-range', `Height must be between ${min} and ${MAX_HEIGHT} in.`);
+    }
+    return height;
+}
+
+// Returns { min, max } screening weights in pounds for the person's height and age band.
+// Throws BodyCompositionError if an input is missing or outside the table.
+export function screeningWeights({ isMale, age, height }) {
+    const parsedAge = parseAge(age);
+    const parsedHeight = parseHeight(height, isMale);
+    const row = screeningTable[isMale ? 'male' : 'female'][parsedHeight];
+    const band = AGE_BAND_LIMITS.findIndex((limit) => parsedAge <= limit);
+    return { min: row[0], max: row[band === -1 ? AGE_BAND_LIMITS.length + 1 : band + 1] };
 }
