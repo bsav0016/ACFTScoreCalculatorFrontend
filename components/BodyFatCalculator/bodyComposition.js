@@ -1,4 +1,5 @@
 import screeningTable from '../../data/height_weight_screening.json';
+import limitsTable from '../../data/body_fat_limits.json';
 
 // Army body-fat estimate from weight and abdominal (waist) circumference. These are the linear formulas the published
 // tables were generated from; tests/bodyComposition.test.js checks them against every cell of the old lookup tables.
@@ -105,4 +106,18 @@ export function screeningWeights({ isMale, age, height }) {
     const row = screeningTable[isMale ? 'male' : 'female'][parsedHeight];
     const band = AGE_BAND_LIMITS.findIndex((limit) => parsedAge <= limit);
     return { min: row[0], max: row[band === -1 ? AGE_BAND_LIMITS.length + 1 : band + 1] };
+}
+
+// Maximum allowable body-fat percent for the person's sex and age band.
+export function bodyFatLimit({ isMale, age }) {
+    const parsedAge = parseAge(age);
+    const band = limitsTable.maxAgeOfBand.findIndex((maxAge) => parsedAge <= maxAge);
+    return limitsTable[isMale ? 'male' : 'female'][band];
+}
+
+// Estimate plus the pass/fail against the allowable limit. withinLimit is true when percent <= limit.
+export function assessBodyFat({ isMale, age, weight, waist }) {
+    const estimate = bodyFatPercent({ isMale, weight, waist });
+    const limit = bodyFatLimit({ isMale, age });
+    return { ...estimate, limit, withinLimit: estimate.percent <= limit };
 }
