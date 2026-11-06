@@ -3,8 +3,7 @@ import { SafeAreaView, View, TouchableOpacity, Text, ScrollView, Platform, Keybo
 import ACFTBannerAd from "../ACFTBannerAd";
 import SourceNote from '../SourceNote';
 import { SOURCES } from '../sources';
-import { maleBodyFatCalculations } from "./CalculationDicts/maleBodyFatCalculations";
-import { femaleBodyFatCalculations } from "./CalculationDicts/femaleBodyFatCalculations";
+import { bodyFatPercent as estimateBodyFat, BodyCompositionError } from "./bodyComposition";
 import { maleHeightWeightCalculations } from "./CalculationDicts/maleHeightWeightCalculations";
 import { femaleHeightWeightCalculations } from "./CalculationDicts/femaleHeightWeightCalculations";
 import { Card, ChartModal, Field, ResultRow, ScrollIntoViewContext, SectionLabel, Segmented, useKeepFocusedVisible } from '../ui';
@@ -55,15 +54,10 @@ export default function BodyFatCalculator(props) {
 
     const calculateBodyFatPercent = () => {
         try {
-            const parsedWeight = parseInt(weight);
-            const parsedWaist = parseInt(waistSize);
-            const newBodyFatPercent = isMale ? maleBodyFatCalculations[parsedWeight][parsedWaist]
-                : femaleBodyFatCalculations[parsedWeight][parsedWaist]
-            if (!newBodyFatPercent) {
-                throw new Error('Invalid inputs');
-            }
-            setBodyFatPercent(newBodyFatPercent + '%');
-        } catch {
+            const { display } = estimateBodyFat({ isMale, weight, waist: waistSize });
+            setBodyFatPercent(display + '%');
+        } catch (error) {
+            if (!(error instanceof BodyCompositionError)) throw error;
             setBodyFatPercent(invalidParameters);
         }
     }
@@ -147,7 +141,7 @@ export default function BodyFatCalculator(props) {
                         <Text style={font.body}>Age must be a whole number between 1 and 99. Height must be a whole number between 58 (60 for males) and 80.</Text>
                     </ChartModal>
                     <ChartModal visible={displayValidParameters} onClose={() => setDisplayValidParameters(false)}>
-                        <Text style={font.body}>Waist size must be a whole number or end in .5 and be between 25 and 55. Weight must be a whole number between 90 and 250.</Text>
+                        <Text style={font.body}>Waist size must be a whole number or end in .5 and be between 25 and 55 (25 and 45 for females). Weight must be a whole number between 90 and 250.</Text>
                     </ChartModal>
                 </ScrollView>
                 </ScrollIntoViewContext.Provider>
