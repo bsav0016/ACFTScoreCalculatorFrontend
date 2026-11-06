@@ -1,23 +1,21 @@
+import anchors from './fixtures/body-fat-anchors.json';
 import { bodyFatPercent, BodyCompositionError } from '../components/BodyFatCalculator/bodyComposition';
-import { maleBodyFatCalculations } from '../components/BodyFatCalculator/CalculationDicts/maleBodyFatCalculations';
-import { femaleBodyFatCalculations } from '../components/BodyFatCalculator/CalculationDicts/femaleBodyFatCalculations';
 
-// The module must reproduce the lookup tables exactly before they are deleted.
+// Values copied from the lookup tables this module replaced (see the fixture's note). The module was checked against
+// every cell of both tables before they were deleted; these anchors keep corners, the "<10"/">60" boundaries and the
+// exact-.5 rounding cells under test.
 describe.each([
-  ['male', true, maleBodyFatCalculations],
-  ['female', false, femaleBodyFatCalculations],
-])('%s: module vs lookup table', (_, isMale, table) => {
-  test('every cell matches', () => {
-    const wrong = [];
-    let cells = 0;
-    for (const weight of Object.keys(table)) {
-      for (const [waist, cell] of Object.entries(table[weight])) {
-        cells += 1;
-        const { display } = bodyFatPercent({ isMale, weight: Number(weight), waist: Number(waist) });
-        if (display !== cell) wrong.push(`${weight} lb / ${waist} in: table ${cell}, module ${display}`);
-      }
-    }
-    expect(cells).toBeGreaterThan(6000);
+  ['male', true],
+  ['female', false],
+])('%s: module vs recorded table values', (sex, isMale) => {
+  test.each(['anchors', 'ties', 'clamps'])('%s', (group) => {
+    const rows = anchors[sex][group];
+    // The female table never reaches "<10" or ">60", so it has no clamp cells.
+    if (group === 'clamps' && !isMale) return expect(rows).toEqual([]);
+    expect(rows.length).toBeGreaterThan(0);
+    const wrong = rows
+      .filter(([weight, waist, cell]) => bodyFatPercent({ isMale, weight, waist }).display !== cell)
+      .map(([weight, waist, cell]) => `${weight} lb / ${waist} in: table ${cell}`);
     expect(wrong).toEqual([]);
   });
 });
@@ -34,9 +32,9 @@ const errorOf = (input) => {
 describe('input validation', () => {
   test('accepts the text a form field produces, including half inches', () => {
     expect(bodyFatPercent({ isMale: true, weight: '180', waist: '34.5' }).display).toBe(
-      String(maleBodyFatCalculations[180][34.5]),
+      '20',
     );
-    expect(bodyFatPercent({ isMale: true, weight: ' 180 ', waist: '34' }).display).toBe(maleBodyFatCalculations[180][34]);
+    expect(bodyFatPercent({ isMale: true, weight: ' 180 ', waist: '34' }).display).toBe('19');
   });
 
   test.each([

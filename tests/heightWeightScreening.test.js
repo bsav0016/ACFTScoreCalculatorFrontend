@@ -2,15 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import table from '../data/height_weight_screening.json';
 import { screeningWeights, BodyCompositionError } from '../components/BodyFatCalculator/bodyComposition';
-import { maleHeightWeightCalculations } from '../components/BodyFatCalculator/CalculationDicts/maleHeightWeightCalculations';
-import { femaleHeightWeightCalculations } from '../components/BodyFatCalculator/CalculationDicts/femaleHeightWeightCalculations';
-
-const AGE_KEYS = [20, 27, 39, 99];
 
 describe.each([
-  ['male', true, maleHeightWeightCalculations, 60],
-  ['female', false, femaleHeightWeightCalculations, 58],
-])('%s height/weight screening', (sex, isMale, oldDict, minHeight) => {
+  ['male', true, 60],
+  ['female', false, 58],
+])('%s height/weight screening', (sex, isMale, minHeight) => {
   const rows = table[sex];
 
   test('has one row per inch from the minimum height to 80', () => {
@@ -33,12 +29,6 @@ describe.each([
       for (let c = 0; c < 5; c++) {
         expect({ height: heights[i], c, ok: rows[heights[i]][c] > rows[heights[i - 1]][c] }).toEqual({ height: heights[i], c, ok: true });
       }
-    }
-  });
-
-  test('matches the old dictionary cell by cell', () => {
-    for (const [height, row] of Object.entries(rows)) {
-      expect(row).toEqual([0, ...AGE_KEYS].map((key) => Number(oldDict[height][key])));
     }
   });
 
