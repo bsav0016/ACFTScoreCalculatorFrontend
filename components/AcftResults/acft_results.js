@@ -1,13 +1,12 @@
-import { Text, View, SafeAreaView, FlatList, StyleSheet } from 'react-native';
+import { Text, View, SafeAreaView, FlatList, StyleSheet, Alert } from 'react-native';
 import { useState, useEffect, useMemo } from 'react';
 import { authFetch, getSession } from '../session';
-import Dialog from 'react-native-dialog';
 import ACFTBannerAd from '../ACFTBannerAd';
-import { backendUrl } from '../constants';
 import Button from '../Button';
 import { Card, ScoreBadge } from '../ui';
 import { colors, font, radius, space } from '../theme';
 import TrendChart from './TrendChart';
+import { deleteSavedResult } from './deleteResult';
 import { AFT_EVENTS, AFT_MAX_TOTAL, buildProgress, formatTime } from './progress';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -83,10 +82,6 @@ function Summary({ progress }) {
 export default function ACFTResults(props) {
 
   const [acftResults, setAcftResults] = useState([]);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [itemNo, setItemNo] = useState(0);
-  const [visible, setVisible] = useState(false)
 
 
   useEffect(() => {
@@ -115,58 +110,27 @@ export default function ACFTResults(props) {
           props.navigation.navigate("Auth")
         }
         else {
-          setUsername(res.username)
           setAcftResults(res.acft_results)
         }
     })
     .catch( error => console.log(error))
   }
 
-  const checkPassword = () => {
-    fetch(`${backendUrl}api/authenticate/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username: username, password: password })
-    })
-    .then( res => res.json())
-    .then( res => {
-        if (res.token) {
-            deleteAcftResult()
-        }
-        else {
-            alert("Incorrect password")
-        }
-    })
-    .catch( error => console.log(error))
-    setVisible(false)
-  }
-
-  const deleteAcftResult = () => {
-    let newAcftResults = []
-    for(let i = 0; i < acftResults.length; i++){
-        if (!(acftResults[i].id === itemNo)) {
-            newAcftResults.push(acftResults[i])
-        }
+  const deleteAcftResult = async (id) => {
+    const result = await deleteSavedResult(authFetch, id)
+    if (result.ok) {
+      setAcftResults((current) => current.filter((r) => r.id !== id))
+      return
     }
-    authFetch(`api/acft_scores/${itemNo}/`, {
-      method: 'DELETE',
-    })
-    .then( () => {
-        setAcftResults(newAcftResults)
-        getData(false)
-    })
-    .catch( error => console.log(error))
+    alert(result.message)
+    if (result.signedOut) props.navigation.navigate("Auth")
   }
 
-  const passwordInput = (value) => {
-    setPassword(value)
-  }
-
-  const showDialog = (item) => {
-      setVisible(true)
-      setItemNo(item.id)
+  const confirmDelete = (item) => {
+    Alert.alert("Delete this score?", "This saved score will be removed from your account.", [
+      { text: "Delete", style: "destructive", onPress: () => deleteAcftResult(item.id) },
+      { text: "Cancel", style: "cancel" },
+    ])
   }
 
   const progress = useMemo(() => buildProgress(acftResults), [acftResults]);
@@ -179,16 +143,6 @@ export default function ACFTResults(props) {
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: colors.bg}}>
-      <Dialog.Container visible={visible}>
-        <Dialog.Title>Confirm with Password</Dialog.Title>
-        <Dialog.Description>
-          Please input your password to delete this score.
-        </Dialog.Description>
-        <Dialog.Input placeholder={"Password"} onChangeText={passwordInput}/>
-        <Dialog.Button label="Cancel" onPress={() => setVisible(false)} />
-        <Dialog.Button label="Confirm" onPress={() => checkPassword()} />
-      </Dialog.Container>
-
       <FlatList
         data={rows}
         keyExtractor={(item) => String(item.id)}
@@ -229,7 +183,7 @@ export default function ACFTResults(props) {
                 </View>
               ))}
 
-              <Button variant="text" title="Delete" onPress={() => showDialog(item)}
+              <Button variant="text" title="Delete" onPress={() => confirmDelete(item)}
                 textStyle={{color: colors.danger}} style={{alignSelf: 'flex-end', marginTop: space.sm}}/>
             </Card>
           );
