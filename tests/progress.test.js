@@ -128,6 +128,16 @@ describe('buildProgress', () => {
     expect(buildProgress([blank1, same2]).comparable).toBe(false);
   });
 
+  test('changes maps each result to its change versus the test before it', () => {
+    const a = aft(2026, 1, 1, [60, 60, 60, 60, 60], { table_version: 'v0' });
+    const b = aft(2026, 2, 1, [70, 70, 70, 70, 70]);
+    const c = aft(2026, 3, 1, [65, 65, 65, 65, 65]);
+    const p = buildProgress([c, a, b]);
+    expect(p.changes[a.id]).toEqual({ delta: null, comparable: true });
+    expect(p.changes[b.id]).toEqual({ delta: 50, comparable: false });
+    expect(p.changes[c.id]).toEqual({ delta: -25, comparable: true });
+  });
+
   test('does not mutate its input', () => {
     const input = [aft(2026, 3, 1, [60, 60, 60, 60, 60]), aft(2026, 1, 1, [60, 60, 60, 60, 60])];
     const copy = [...input];

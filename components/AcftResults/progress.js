@@ -69,9 +69,20 @@ export function buildProgress(results) {
     }
   }
 
+  // Change in total versus the test before each one (null for the first), and whether both were scored on the
+  // same table.
+  const changes = {};
+  aft.forEach((r, i) => {
+    const before = i > 0 ? aft[i - 1] : null;
+    changes[r.id] = before
+      ? { delta: r.total_score - before.total_score, comparable: tableOf(r) === tableOf(before) }
+      : { delta: null, comparable: true };
+  });
+
   return {
     aft,
     acft,
+    changes,
     latest,
     previous,
     totalDelta,
