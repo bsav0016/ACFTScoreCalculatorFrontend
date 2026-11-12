@@ -7,6 +7,7 @@ import { Card, ScoreBadge } from '../ui';
 import { colors, font, radius, space } from '../theme';
 import TrendChart from './TrendChart';
 import { deleteSavedResult } from './deleteResult';
+import { fetchTarget, targetStatus } from './target';
 import { AFT_EVENTS, AFT_MAX_TOTAL, buildProgress, formatTime } from './progress';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -32,9 +33,10 @@ const eventsFor = (item) => {
 const signed = (n) => (n > 0 ? `+${n}` : String(n));
 const deltaColor = (n) => (n > 0 ? colors.success : n < 0 ? colors.danger : colors.textMuted);
 
-function Summary({ progress }) {
+function Summary({ progress, target }) {
   const { latest, previous, totalDelta, bestTotal, weakest, series, comparable, bests } = progress;
   if (!latest) return null;
+  const goal = targetStatus(target, latest.total_score);
   return (
     <Card>
       <Text style={font.caption}>Latest AFT total</Text>
@@ -50,6 +52,11 @@ function Summary({ progress }) {
       {previous && !comparable && (
         <Text style={[font.caption, {marginBottom: space.sm}]}>
           Your last two tests were scored on different tables, so the change is approximate.
+        </Text>
+      )}
+      {goal && (
+        <Text style={[font.body, {color: goal.reached ? colors.success : colors.gold, marginBottom: space.sm}]}>
+          {goal.reached ? `Goal of ${target} reached` : `${goal.remaining} points to your goal of ${target}`}
         </Text>
       )}
       <TrendChart series={series}/>
@@ -82,6 +89,7 @@ function Summary({ progress }) {
 export default function ACFTResults(props) {
 
   const [acftResults, setAcftResults] = useState([]);
+  const [target, setTarget] = useState(null);
 
 
   useEffect(() => {
@@ -111,6 +119,7 @@ export default function ACFTResults(props) {
         }
         else {
           setAcftResults(res.acft_results)
+          fetchTarget(authFetch).then(setTarget)
         }
     })
     .catch( error => console.log(error))
@@ -147,7 +156,7 @@ export default function ACFTResults(props) {
         data={rows}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={{padding: space.lg}}
-        ListHeaderComponent={<Summary progress={progress}/>}
+        ListHeaderComponent={<Summary progress={progress} target={target}/>}
         ListEmptyComponent={<Text style={[font.caption, {textAlign: 'center', marginTop: space.xl}]}>No saved scores yet.</Text>}
         renderItem={({item}) => {
           if (item.heading) {
