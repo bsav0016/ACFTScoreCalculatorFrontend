@@ -1,5 +1,5 @@
 import { Text, View, SafeAreaView, FlatList, StyleSheet } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { authFetch, getSession } from '../session';
 import Dialog from 'react-native-dialog';
 import ACFTBannerAd from '../ACFTBannerAd';
@@ -7,16 +7,10 @@ import { backendUrl } from '../constants';
 import Button from '../Button';
 import { Card, ScoreBadge } from '../ui';
 import { colors, font, radius, space } from '../theme';
+import TrendChart from './TrendChart';
+import { AFT_EVENTS, AFT_MAX_TOTAL, buildProgress, formatTime } from './progress';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-// AFT results store plain seconds. ACFT results saved by the app join "minutes * 60" and the seconds as text
-// (1:45 -> 6045), so they decode differently.
-const formatTime = (raw, standard) => {
-  const minutes = standard === 'AFT' ? Math.floor(raw / 60) : Math.floor(raw / 6000);
-  const seconds = raw % 60;
-  return `${minutes}:${String(seconds).padStart(2, '0')}`;
-};
 
 const formatDate = (item) => `${MONTHS[item.month - 1] || item.month} ${item.day}, ${item.year}`;
 
@@ -36,10 +30,55 @@ const eventsFor = (item) => {
   return events;
 };
 
-// Newest test first.
-const byDateDescending = (a, b) =>
-  (b.year - a.year) || (b.month - a.month) || (b.day - a.day) || (b.id - a.id);
+const signed = (n) => (n > 0 ? `+${n}` : String(n));
+const deltaColor = (n) => (n > 0 ? colors.success : n < 0 ? colors.danger : colors.textMuted);
 
+function Summary({ progress }) {
+  const { latest, previous, totalDelta, bestTotal, weakest, series, comparable, bests } = progress;
+  if (!latest) return null;
+  return (
+    <Card>
+      <Text style={font.caption}>Latest AFT total</Text>
+      <View style={styles.cardHeader}>
+        <Text style={styles.total}>
+          {latest.total_score}
+          <Text style={styles.totalMax}> / {AFT_MAX_TOTAL}</Text>
+        </Text>
+        {totalDelta !== null && (
+          <Text style={[font.heading, {color: deltaColor(totalDelta)}]}>{signed(totalDelta)}</Text>
+        )}
+      </View>
+      {previous && !comparable && (
+        <Text style={[font.caption, {marginBottom: space.sm}]}>
+          Your last two tests were scored on different tables, so the change is approximate.
+        </Text>
+      )}
+      <TrendChart series={series}/>
+      <View style={styles.eventRow}>
+        <Text style={[font.body, {flex: 1}]}>Best total</Text>
+        <Text style={font.heading}>{bestTotal.total_score}</Text>
+      </View>
+      {weakest && (
+        <View style={styles.eventRow}>
+          <Text style={[font.body, {flex: 1}]}>Weakest event</Text>
+          <Text style={[font.caption, {marginRight: space.md}]}>{weakest.label}</Text>
+          <ScoreBadge score={weakest.score} entered={true}/>
+        </View>
+      )}
+      {series.length > 1 && (
+        <>
+          <Text style={[font.caption, {marginTop: space.md}]}>Best score per event</Text>
+          {AFT_EVENTS.map(({ key, label }) => (
+            <View key={key} style={styles.eventRow}>
+              <Text style={[font.body, {flex: 1}]}>{label}</Text>
+              <ScoreBadge score={bests[key].score} entered={true}/>
+            </View>
+          ))}
+        </>
+      )}
+    </Card>
+  );
+}
 
 export default function ACFTResults(props) {
 
@@ -130,6 +169,14 @@ export default function ACFTResults(props) {
       setItemNo(item.id)
   }
 
+  const progress = useMemo(() => buildProgress(acftResults), [acftResults]);
+  // Newest AFT first, then a heading and the retired ACFT results.
+  const rows = useMemo(() => {
+    const list = [...progress.aft].reverse();
+    if (progress.acft.length) list.push({ id: 'acft-heading', heading: true }, ...progress.acft);
+    return list;
+  }, [progress]);
+
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: colors.bg}}>
       <Dialog.Container visible={visible}>
@@ -143,12 +190,17 @@ export default function ACFTResults(props) {
       </Dialog.Container>
 
       <FlatList
-        data={[...acftResults].sort(byDateDescending)}
+        data={rows}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={{padding: space.lg}}
+        ListHeaderComponent={<Summary progress={progress}/>}
         ListEmptyComponent={<Text style={[font.caption, {textAlign: 'center', marginTop: space.xl}]}>No saved scores yet.</Text>}
         renderItem={({item}) => {
+          if (item.heading) {
+            return <Text style={[font.heading, {marginTop: space.lg, marginBottom: space.sm}]}>Retired ACFT results</Text>;
+          }
           const isAft = item.standard === 'AFT';
+          const change = progress.changes[item.id];
           return (
             <Card>
               <View style={styles.cardHeader}>
@@ -157,6 +209,11 @@ export default function ACFTResults(props) {
                   <View style={styles.tag}>
                     <Text style={styles.tagText}>{isAft ? 'AFT' : 'ACFT'}</Text>
                   </View>
+                  {change && change.delta !== null && (
+                    <Text style={[font.caption, {color: deltaColor(change.delta), marginTop: 4}]}>
+                      {signed(change.delta)} since previous test{change.comparable ? '' : ' (different scoring table)'}
+                    </Text>
+                  )}
                 </View>
                 <Text style={styles.total}>
                   {item.total_score}
