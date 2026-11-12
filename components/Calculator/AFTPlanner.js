@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ACFTBannerAd from '../ACFTBannerAd';
+import { getSession, authFetch } from '../session';
+import { fetchTarget, saveTarget } from '../AcftResults/target';
 import Button from '../Button';
 import { Card, Field, ScoreBadge } from '../ui';
 import { colors, font, radius, space } from '../theme';
@@ -30,6 +32,36 @@ export default function AFTPlanner(props) {
 
   const [targetText, setTargetText] = useState(String(Math.min(MAX_TOTAL, (Math.floor(total / 25) + 1) * 25)));
 
+  // The goal saved on the account, if signed in. It replaces the suggested target once, unless the person has already
+  // started typing, and is ignored when the total has already passed it.
+  const [savedTarget, setSavedTarget] = useState(null);
+  const [signedIn, setSignedIn] = useState(false);
+  const [saveState, setSaveState] = useState('idle');
+  const edited = useRef(false);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const session = await getSession();
+      if (!active || !session) return;
+      setSignedIn(true);
+      const target = await fetchTarget(authFetch);
+      if (!active || target === null) return;
+      setSavedTarget(target);
+      if (!edited.current && target > total) setTargetText(String(target));
+    })();
+    return () => { active = false; };
+  }, []);
+
+  const changeTarget = (text) => { edited.current = true; setSaveState('idle'); setTargetText(text); };
+
+  const saveGoal = async (value) => {
+    setSaveState('saving');
+    const ok = await saveTarget(authFetch, value);
+    if (ok) setSavedTarget(value);
+    setSaveState(ok ? 'saved' : 'failed');
+  };
+
   if (!validAge) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -57,7 +89,7 @@ export default function AFTPlanner(props) {
   });
   const planTotal = plan.reduce((sum, row) => sum + (row.need ? row.need.score : row.score), 0);
 
-  const setQuick = (value) => setTargetText(String(Math.min(MAX_TOTAL, value)));
+  const setQuick = (value) => changeTarget(String(Math.min(MAX_TOTAL, value)));
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -76,7 +108,7 @@ export default function AFTPlanner(props) {
 
         <Card>
           <Text style={font.heading}>Your goal</Text>
-          <Field label="Target total" value={targetText} onChangeText={setTargetText} placeholder={String(MAX_TOTAL)}
+          <Field label="Target total" value={targetText} onChangeText={changeTarget} placeholder={String(MAX_TOTAL)}
             returnKeyType="done" />
           <View style={styles.chips}>
             {[25, 50].map(points => (
@@ -88,6 +120,16 @@ export default function AFTPlanner(props) {
               <Text style={styles.chipText}>Max {MAX_TOTAL}</Text>
             </TouchableOpacity>
           </View>
+          {signedIn && validTarget && target !== savedTarget &&
+            <Button variant="secondary" title={saveState === 'saving' ? 'Saving...' : 'Save as my goal'}
+              onPress={() => saveGoal(target)} disabled={saveState === 'saving'} style={{ marginTop: space.sm }} />
+          }
+          {saveState === 'saved' && target === savedTarget &&
+            <Text style={[font.caption, { marginTop: space.sm }]}>Saved to your account. Saved Results shows how close you are.</Text>
+          }
+          {saveState === 'failed' &&
+            <Text style={[font.caption, { marginTop: space.sm, color: colors.danger }]}>Could not save your goal. Try again.</Text>
+          }
           {!validTarget &&
             <Text style={[font.caption, { marginTop: space.sm, color: colors.danger }]}>
               {total >= MAX_TOTAL ? "You're already at the maximum." : `Enter a target from ${total + 1} to ${MAX_TOTAL}.`}
