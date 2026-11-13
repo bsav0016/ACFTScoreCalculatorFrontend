@@ -8,6 +8,9 @@ import Dialog from 'react-native-dialog';
 import ACFTBannerAd from '../ACFTBannerAd';
 import Button from '../Button';
 import { backendUrl } from '../constants';
+import { notify } from '../notify';
+import { reportError } from '../errorReporting';
+import { deleteAccount as requestAccountDelete } from '../AcftResults/deleteResult';
 import { Card, inputStyle } from '../ui';
 import { colors, font, space } from '../theme';
 
@@ -94,7 +97,8 @@ export default function Profile(props) {
     .then( async res => {
         if (res.username === undefined) {
           await clearSession()
-          alert("Couldn't get account info")
+          notify("Couldn't get account info")
+          reportError(new Error('Account reply had no username'), 'load-account')
           props.navigation.navigate("Auth")
         }
         else {
@@ -110,7 +114,18 @@ export default function Profile(props) {
           setPaidFee(res.paid_fee)
         }
     })
-    .catch( error => console.log(error))
+    .catch(error => failed(error, 'load-account'))
+  }
+
+  // A request that threw. A TypeError from fetch means the phone was offline; anything else (an unreadable reply)
+  // is a bug worth knowing about. Either way the person is told instead of the failure being swallowed.
+  const failed = (error, area) => {
+    if (error instanceof TypeError) {
+      notify("Couldn't reach the server. Check your connection and try again.")
+    } else {
+      notify('Something went wrong. Please try again.')
+      reportError(error, area)
+    }
   }
 
   const signOut = async () => {
@@ -128,7 +143,7 @@ export default function Profile(props) {
         },
         {
           text: "No",
-          onPress: () => console.log("Cancelled"),
+          onPress: () => {},
           style: 'cancel'
         }
       ]
@@ -137,14 +152,19 @@ export default function Profile(props) {
 
   const deleteAccount = async () => {
     await getData(false)
-    authFetch(`api/users/${id}/`, {
-      method: 'DELETE',
-    })
-    .then( async res => {
+    const result = await requestAccountDelete(authFetch, id)
+    if (result.ok) {
       await signOut();
-      alert("Deleted account");
-    })
-    .catch( error => alert(error))
+      notify("Your account has been deleted.", 'success');
+      return
+    }
+    notify(result.message)
+    if (result.signedOut) {
+      await signOut();
+    }
+    else if (!result.network) {
+      reportError(new Error(`Deleting the account failed with status ${result.status}`), 'delete-account')
+    }
   }
 
   const goToAcftResults = () => {
@@ -164,7 +184,7 @@ export default function Profile(props) {
       setEditEmail(!editEmail)
     }
     else{
-      alert("Can only edit one at a time")
+      notify("Can only edit one at a time", 'info')
     }
   }
 
@@ -181,7 +201,7 @@ export default function Profile(props) {
       setEditUsername(!editUsername)
     }
     else{
-      alert("Can only edit one at a time")
+      notify("Can only edit one at a time", 'info')
     }
   }
 
@@ -198,7 +218,7 @@ export default function Profile(props) {
       setEditFirstName(!editFirstName)
     }
     else{
-      alert("Can only edit one at a time")
+      notify("Can only edit one at a time", 'info')
     }
   }
 
@@ -215,7 +235,7 @@ export default function Profile(props) {
       setEditLastName(!editLastName)
     }
     else{
-      alert("Can only edit one at a time")
+      notify("Can only edit one at a time", 'info')
     }
   }
 
@@ -223,35 +243,35 @@ export default function Profile(props) {
     let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
     let tempEmail = email.replace(/\s+/g, '').toLowerCase()
     if (username === '') {
-        alert("Username field must not be blank")
+        notify("Username field must not be blank")
         return false
     }
     else if (username.length > 30) {
-        alert("Username field must not be more than 30 characters")
+        notify("Username field must not be more than 30 characters")
         return false
     }
     else if (reg.test(tempEmail) === false) {
-        alert("Must be valid email address")
+        notify("Must be valid email address")
         return false
     }
     else if (tempEmail.length > 50) {
-        alert("Email must not be more than 50 characters")
+        notify("Email must not be more than 50 characters")
         return false
     }
     else if (firstName === '') {
-        alert("First Name must not be blank")
+        notify("First Name must not be blank")
         return false
     }
     else if (firstName.length > 30) {
-        alert("First Name must not be more than 30 characters")
+        notify("First Name must not be more than 30 characters")
         return false
     }
     else if (lastName === '') {
-        alert("Last Name must not be blank")
+        notify("Last Name must not be blank")
         return false
     }
     else if (lastName.length > 30) {
-        alert("Last Name must not be more than 30 characters")
+        notify("Last Name must not be more than 30 characters")
         return false
     }
     else {
@@ -278,16 +298,17 @@ export default function Profile(props) {
         usernameField = ["It's fine"]
       }
       if (emailField.includes("user with this Email already exists.")){
-        alert("Email is already in use")
+        notify("Email is already in use")
         setEmail(prevEmail)
         return
       }
       else if (usernameField.includes("user with this Username already exists.")) {
-        alert("Username already in use")
+        notify("Username already in use")
         return
       }
       else if (res.id === undefined) {
-        alert("Unknown error")
+        notify("Unknown error")
+        reportError(new Error('Account update reply had no id'), 'update-account')
         return
       }
       else {
@@ -299,10 +320,10 @@ export default function Profile(props) {
         setPrevEmail(email)
         setPrevFirstName(firstName)
         setPrevLastName(lastName)
-        alert("Successfully updated account info")
+        notify("Successfully updated account info", 'success')
       }
     })
-    .catch( error => console.log(error))
+    .catch(error => failed(error, 'update-account'))
   }
 
   const checkPassword = async () => {
@@ -320,14 +341,14 @@ export default function Profile(props) {
           saveInfo()
         }
         else {
-          alert("Incorrect password")
+          notify("Incorrect password")
           setEmail(prevEmail)
           setUsername(prevUsername)
           setFirstName(prevFirstName)
           setLastName(prevLastName)
         }
     })
-    .catch( error => console.log(error))
+    .catch(error => failed(error, 'confirm-password'))
     setVisible(false)
   }
 
@@ -356,7 +377,7 @@ export default function Profile(props) {
     setChanging(false)
     if (result.ok) {
       setChangeVisible(false)
-      alert("Password changed")
+      notify("Password changed", 'success')
     }
     else if (result.kind === 'wrong_password') {
       setChangeError('Your current password is not correct.')
@@ -366,7 +387,7 @@ export default function Profile(props) {
     }
     else if (result.kind === 'signed_out') {
       setChangeVisible(false)
-      alert("Please sign in again.")
+      notify("Please sign in again.", 'info')
       props.navigation.navigate("Auth")
     }
     else if (result.kind === 'throttled') {
@@ -377,6 +398,7 @@ export default function Profile(props) {
     }
     else {
       setChangeError('Something went wrong. Please try again.')
+      reportError(new Error('Change password got an unexpected answer'), 'change-password')
     }
   }
 

@@ -126,9 +126,13 @@ export default function ACFTResults(props) {
         }
     })
     .catch((error) => {
-      notify("Couldn't load your saved scores. Check your connection and try again.")
       // A TypeError from fetch means the phone was offline; anything else is a bug worth knowing about.
-      if (!(error instanceof TypeError)) reportError(error, 'load-saved-scores')
+      if (error instanceof TypeError) {
+        notify("Couldn't load your saved scores. Check your connection and try again.")
+      } else {
+        notify("Couldn't load your saved scores. Please try again.")
+        reportError(error, 'load-saved-scores')
+      }
     })
   }
 

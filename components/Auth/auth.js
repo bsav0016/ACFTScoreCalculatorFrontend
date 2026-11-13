@@ -51,9 +51,13 @@ export default function Auth(props) {
                 notify("Incorrect username or password");
             }
         } catch (error) {
-            notify("Couldn't reach the server. Check your connection and try again.")
             // A TypeError from fetch means the phone was offline; anything else (an unreadable reply) is worth knowing.
-            if (!(error instanceof TypeError)) reportError(error, 'login')
+            if (error instanceof TypeError) {
+                notify("Couldn't reach the server. Check your connection and try again.")
+            } else {
+                notify('Something went wrong. Please try again.')
+                reportError(error, 'login')
+            }
         }
         setLoading(false)
     }
@@ -157,8 +161,12 @@ export default function Auth(props) {
             .catch(error => {
                 // "API error" was already explained to the person above; anything else is a network or reading failure.
                 if (error.message !== "API error") {
-                    notify("Couldn't reach the server. Check your connection and try again.")
-                    if (!(error instanceof TypeError)) reportError(error, 'register')
+                    if (error instanceof TypeError) {
+                        notify("Couldn't reach the server. Check your connection and try again.")
+                    } else {
+                        notify('Something went wrong. Please try again.')
+                        reportError(error, 'register')
+                    }
                 }
                 setLoading(false);
             })

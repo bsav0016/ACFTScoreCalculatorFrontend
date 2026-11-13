@@ -1,4 +1,4 @@
-import { deleteSavedResult } from '../components/AcftResults/deleteResult';
+import { deleteSavedResult, deleteAccount } from '../components/AcftResults/deleteResult';
 
 const respond = (status) => jest.fn(async () => ({ status, ok: status >= 200 && status < 300 }));
 
@@ -34,5 +34,29 @@ describe('deleteSavedResult', () => {
     expect(result.ok).toBe(false);
     expect(result.network).toBe(true);
     expect(result.message).toMatch(/connection/i);
+  });
+});
+
+describe('deleteAccount', () => {
+  test('sends a DELETE for the account and reports success on 204', async () => {
+    const request = respond(204);
+    expect(await deleteAccount(request, 5)).toEqual({ ok: true });
+    expect(request).toHaveBeenCalledWith('api/users/5/', { method: 'DELETE' });
+  });
+
+  test('an unexpected status is a failure, so the person is not signed out or told it worked', async () => {
+    for (const status of [400, 403, 500]) {
+      const result = await deleteAccount(respond(status), 5);
+      expect(result.ok).toBe(false);
+      expect(result.status).toBe(status);
+      expect(result.message).toMatch(/account/i);
+    }
+  });
+
+  test('a 401 means signed out, and a network failure is flagged as one', async () => {
+    expect((await deleteAccount(respond(401), 5)).signedOut).toBe(true);
+    const offline = await deleteAccount(jest.fn(async () => { throw new Error('offline'); }), 5);
+    expect(offline.ok).toBe(false);
+    expect(offline.network).toBe(true);
   });
 });
