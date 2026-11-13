@@ -149,6 +149,16 @@ export function createSession({ secureStore, asyncStorage, getBackendUrl, fetchF
     return { ok: false, kind: 'unknown' };
   }
 
+  // Ask for the username to be emailed. Like the reset request, the server answers the same whether or not the
+  // address has an account, so "ok" only means the request was accepted.
+  async function requestUsernameReminder(email) {
+    const { status } = await postJson('api/users/forgot_username/', { email: email.trim() });
+    if (status === 200) return { ok: true };
+    if (status === 429) return { ok: false, kind: 'throttled' };
+    if (status === 0) return { ok: false, kind: 'network' };
+    return { ok: false, kind: 'unknown' };
+  }
+
   async function confirmPasswordReset({ email, code, newPassword }) {
     const { status, data } = await postJson('api/users/password_reset/confirm/', {
       email: email.trim(), code: code.trim(), new_password: newPassword,
@@ -199,6 +209,6 @@ export function createSession({ secureStore, asyncStorage, getBackendUrl, fetchF
 
   return {
     getSession, setSession, clearSession, hasSession, authFetch, signOut,
-    requestPasswordReset, confirmPasswordReset, changePassword,
+    requestPasswordReset, requestUsernameReminder, confirmPasswordReset, changePassword,
   };
 }
