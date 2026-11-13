@@ -1,9 +1,9 @@
-// Deletes one saved result with the signed-in token and says what happened, so the screen only removes the row
-// when the server did. `request` is authFetch (path, options) -> Response.
-export async function deleteSavedResult(request, id) {
+// Deletes a record with the signed-in token and says what happened, so the screen only reports success (and only
+// removes the row, or signs the person out) when the server did. `request` is authFetch (path, options) -> Response.
+async function sendDelete(request, path, failMessage) {
   let response;
   try {
-    response = await request(`api/acft_scores/${id}/`, { method: 'DELETE' });
+    response = await request(path, { method: 'DELETE' });
   } catch {
     return { ok: false, network: true, message: "Couldn't reach the server. Check your connection and try again." };
   }
@@ -12,5 +12,13 @@ export async function deleteSavedResult(request, id) {
   if (response.status === 401) {
     return { ok: false, signedOut: true, status: 401, message: 'Your session has ended. Please sign in again.' };
   }
-  return { ok: false, status: response.status, message: "Couldn't delete this score. Please try again." };
+  return { ok: false, status: response.status, message: failMessage };
+}
+
+export function deleteSavedResult(request, id) {
+  return sendDelete(request, `api/acft_scores/${id}/`, "Couldn't delete this score. Please try again.");
+}
+
+export function deleteAccount(request, id) {
+  return sendDelete(request, `api/users/${id}/`, "Couldn't delete your account. Please try again.");
 }
