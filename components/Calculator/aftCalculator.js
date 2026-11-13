@@ -10,6 +10,8 @@ import ReactNativeZoomableView from '@openspacelabs/react-native-zoomable-view/s
 import PercentileCard from './PercentileCard';
 import { Card, ChartModal, CompactInput, EventRow, InputRow, ScrollIntoViewContext, Segmented, Toast, TotalBar, useKeepFocusedVisible, useToast } from '../ui';
 import { describeSaveResult, validateTestDate } from './saveScore';
+import { notify } from '../notify';
+import { reportError } from '../errorReporting';
 import { colors, font, space } from '../theme';
 import calculatorStyles from './calculatorStyles';
 import SourceNote from '../SourceNote';
@@ -116,7 +118,7 @@ const AFTCalculator = (props) => {
     else if (isNaN(deadlift)) {
       setDeadlift('');
       setDeadliftScore(0);
-      alert("Please enter a number for deadlift");
+      notify("Please enter a number for the deadlift", 'info');
     }
     else {
       const newDeadliftScore = calculateEventScore(deadlift, 'deadlift');
@@ -134,7 +136,7 @@ const AFTCalculator = (props) => {
     else if (isNaN(pushups)) {
       setPushups('');
       setPushupScore(0);
-      alert("Please enter a number for push ups");
+      notify("Please enter a number for the push-ups", 'info');
     }
     else {
       const newPushupScore = calculateEventScore(pushups, 'pushups');
@@ -152,7 +154,7 @@ const AFTCalculator = (props) => {
     else if (isNaN(sdcMin)) {
       setSDCMin('');
       setSDCScore(0);
-      alert("Please enter a number");
+      notify("Please enter a number for the SDC minutes", 'info');
     }
     else {
       const sdcTime = timeFormat(sdcMin, sdcSec)
@@ -169,7 +171,7 @@ const AFTCalculator = (props) => {
     else if (isNaN(sdcSec)) {
       setSDCSec('');
       setSDCScore(0);
-      alert("Please enter a number");
+      notify("Please enter a number for the SDC seconds", 'info');
     }
     else {
       const sdcTime = timeFormat(sdcMin, sdcSec)
@@ -188,7 +190,7 @@ const AFTCalculator = (props) => {
     else if (isNaN(plankMin)) {
       setPlankMin('');
       setPlankScore(0);
-      alert("Please enter a number");
+      notify("Please enter a number for the plank minutes", 'info');
     }
     else {
       const newPlankScore = calculateEventScore(timeFormat(plankMin, plankSec), 'plank');
@@ -204,7 +206,7 @@ const AFTCalculator = (props) => {
     else if (isNaN(plankSec)) {
       setPlankSec('');
       setPlankScore(0);
-      alert("Please enter a number");
+      notify("Please enter a number for the plank seconds", 'info');
     }
     else {
       const newPlankScore = calculateEventScore(timeFormat(plankMin, plankSec), 'plank');
@@ -222,7 +224,7 @@ const AFTCalculator = (props) => {
     else if (isNaN(runMin)) {
       setRunMin('');
       setRunScore(0);
-      alert("Please enter a number");
+      notify("Please enter a number for the run minutes", 'info');
     }
     else {
       const newRunScore = calculateEventScore(timeFormat(runMin, runSec), 'tmr');
@@ -240,7 +242,7 @@ const AFTCalculator = (props) => {
     else if (isNaN(runSec)) {
       setRunSec('');
       setRunScore(0);
-      alert("Please enter a number");
+      notify("Please enter a number for the run seconds", 'info');
     }
     else {
       const newRunScore = calculateEventScore(timeFormat(runMin, runSec), 'tmr');
@@ -278,7 +280,7 @@ const AFTCalculator = (props) => {
         },
         {
           text: "No",
-          onPress: () => console.log("Cancelled"),
+          onPress: () => {},
           style: 'cancel'
         }
       ]
@@ -334,8 +336,14 @@ const AFTCalculator = (props) => {
         // Not JSON (for example an error page); describeSaveResult falls back to a generic message.
       }
       result = describeSaveResult({ status: res.status, ok: res.ok, body });
+      // A server error, or a success the app cannot read, is worth knowing about. A refusal with a reason (a wrong
+      // score, an expired login) is the app working as designed.
+      if (res.status >= 500 || (res.ok && result.type === 'error')) {
+        reportError(new Error(`Saving a score got an unexpected answer (status ${res.status})`), 'save-score');
+      }
     } catch (err) {
-      console.log(err);
+      // A TypeError from fetch means the phone was offline; anything else (for example storage failing) is a bug.
+      if (!(err instanceof TypeError)) reportError(err, 'save-score');
       result = describeSaveResult({ networkError: true });
     } finally {
       saving.current = false;

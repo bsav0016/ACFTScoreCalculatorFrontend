@@ -105,7 +105,6 @@ export default function ACFTResults(props) {
             setData(session.id)
         }
     } else {
-        console.log("No login")
         props.navigation.navigate("Auth")
     }
   };
