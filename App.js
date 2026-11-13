@@ -14,6 +14,7 @@ import WaistToHeightRatio from './components/WaistToHeightRatio/waistToHeightRat
 import AFTCalculator from './components/Calculator/aftCalculator';
 import AFTPlanner from './components/Calculator/AFTPlanner';
 import { colors, headerOptions } from './components/theme';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MessageHost from './components/MessageHost';
 
 const Stack = createNativeStackNavigator();
@@ -28,7 +29,7 @@ const screenLayout = ({ children }) => (
 
 export default function App() {
   return (
-    <View style={{ flex: 1 }}>
+    <SafeAreaProvider style={{ flex: 1 }}>
     <NavigationContainer theme={{ ...DarkTheme, colors: { ...DarkTheme.colors, background: colors.bg } }}>
       <Stack.Navigator 
         initialRouteName="Home"
@@ -48,6 +49,6 @@ export default function App() {
       </Stack.Navigator>
     </NavigationContainer>
     <MessageHost />
-    </View>
+    </SafeAreaProvider>
   );
 }

@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Toast, useToast } from './ui';
 import { onNotify } from './notify';
 
-function Host() {
+// Mount once inside the app's SafeAreaProvider, as the last child of the root, so messages appear in front of every screen.
+export default function MessageHost() {
   const { toast, showToast, hideToast } = useToast();
   const insets = useSafeAreaInsets();
 
@@ -18,11 +19,3 @@ function Host() {
   );
 }
 
-// Mount once, as the last child of the app's root view, so messages appear in front of every screen.
-export default function MessageHost() {
-  return (
-    <SafeAreaProvider pointerEvents="box-none" style={StyleSheet.absoluteFill}>
-      <Host />
-    </SafeAreaProvider>
-  );
-}
