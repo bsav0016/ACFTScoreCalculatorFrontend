@@ -10,11 +10,9 @@ import ForgotPassword from './components/Auth/ForgotPassword';
 import ForgotUsername from './components/Auth/ForgotUsername';
 import Home from './components/Home/home';
 import ACFTResults from './components/AcftResults/acft_results';
-import BodyFatCalculator from './components/BodyFatCalculator/bodyFatCalculator';
 import WaistToHeightRatio from './components/WaistToHeightRatio/waistToHeightRatio';
 import AFTCalculator from './components/Calculator/aftCalculator';
 import AFTPlanner from './components/Calculator/AFTPlanner';
-import ACFTCalculator from './components/ACFTCalculator/ACFTCalculator';
 import { colors, headerOptions } from './components/theme';
 
 const Stack = createNativeStackNavigator();
@@ -38,8 +36,6 @@ export default function App() {
         <Stack.Screen name="Home" component={Home} options={{ title: "Home" }}/>
         <Stack.Screen name="AFTCalculator" component={AFTCalculator} options={{ title: "AFT Calculator" }}/>
         <Stack.Screen name="AFTPlanner" component={AFTPlanner} options={{ title: "Goal Planner" }}/>
-        <Stack.Screen name="ACFTCalculator" component={ACFTCalculator} options={{ title: "ACFT Calculator" }}/>
-        <Stack.Screen name="BodyFatCalculator" component={BodyFatCalculator} options={{ title: "H&W & Body Fat %" }} />
         <Stack.Screen name="WaistToHeightRatio" component={WaistToHeightRatio} options={{ title: "Waist-to-Height Ratio" }} />
         <Stack.Screen name="Auth" component={Auth} options={{ title: "Login" }}/>
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{ title: "Reset password" }}/>

@@ -13,7 +13,6 @@ Scoring the Army Fitness Test means looking up each event's result in tables tha
 - **AFT Calculator** – event scores and total for the current standards, plus a percentile card (see [Percentiles](#percentiles))
 - **Goal Planner** – given the results you entered, works out what each event needs to reach a target total
 - **Waist-to-Height Ratio** – body-composition screening
-- **ACFT Calculator** and **Height/Weight & Body Fat %** – the earlier standards, kept for reference
 - **Accounts and saved results** – sign in to save scores and view them later
 - Runs on a dark theme; on tablets the screens stay in a readable 640px column
 
@@ -58,7 +57,7 @@ The scoring tests are in `tests/`: golden values read by hand from the table cel
 
 ## How the scoring works
 
-Official AFT scoring is a set of lookup charts by age bracket and sex or combat-MOS standard. The charts are stored as arrays under `components/Calculator/AFTScores/` (and `components/ACFTCalculator/Scores/` for the old standard). The scripts in `pythonBuilderFiles/` turn charts pasted from the official tables into those arrays, so the data can be regenerated when the Army changes the standards.
+Official AFT scoring is a set of lookup charts by age bracket and sex or combat-MOS standard. The charts are stored as arrays under `components/Calculator/AFTScores/`. The scripts in `pythonBuilderFiles/` turn charts pasted from the official tables into those arrays, so the data can be regenerated when the Army changes the standards.
 
 ## Percentiles
 

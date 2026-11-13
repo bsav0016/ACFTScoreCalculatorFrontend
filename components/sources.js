@@ -15,11 +15,6 @@ export const SOURCES = {
     publisher: 'U.S. Army',
     url: 'https://www.army.mil/e2/downloads/rv7/tyf/ABCP_FAQ.pdf',
   },
-  ar600_9: {
-    title: 'AR 600-9, The Army Body Composition Program (historical height/weight and tape-test tables)',
-    publisher: 'U.S. Army Publishing Directorate',
-    url: 'https://armypubs.army.mil',
-  },
 };
 
 export const DISCLAIMER =

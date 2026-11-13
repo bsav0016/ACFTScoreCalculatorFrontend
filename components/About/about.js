@@ -38,7 +38,7 @@ export default function About() {
           <Button variant="text" title="Privacy Policy" onPress={() => openPrivacy()} style={{alignSelf: 'flex-start', paddingHorizontal: 0}} />
           <Button variant="text" title="Terms and Conditions" onPress={() => openTerms()} style={{alignSelf: 'flex-start', paddingHorizontal: 0}} />
         </Card>
-        <SourceNote sources={[SOURCES.aft, SOURCES.whtr, SOURCES.abcpFaq, SOURCES.ar600_9]}/>
+        <SourceNote sources={[SOURCES.aft, SOURCES.whtr, SOURCES.abcpFaq]}/>
         <Text style={[font.caption, {textAlign: 'center', marginTop: space.md}]}>
           {describeBuild({
             appVersion: Constants.expoConfig?.version,
