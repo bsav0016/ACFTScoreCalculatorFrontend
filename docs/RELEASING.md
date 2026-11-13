@@ -40,6 +40,20 @@ An update is only delivered to builds with the **same app version** (`runtimeVer
    - About screen shows the 3.3.0 build details.
 6. **After release**, publish the current code to the preview channel first to confirm the update path works end to end (`npm run update:preview`), then follow "Publishing" below for real fixes.
 
+## Releasing 3.4.0 (error reporting with Sentry)
+
+3.4.0 is a store release: it adds the Sentry native module, so builds before it can never report errors, and an update published for 3.4.0 reaches only 3.4.0 builds. The version, iOS build number (43) and Android versionCode (17) are already bumped in `app.json`.
+
+**Do not merge the Sentry PR until you are ready to build.** Once it is on `main` the version there is 3.4.0, so `npm run update:production` would publish for 3.4.0 and 3.3.0 phones would stop receiving fixes. Until then, keep shipping fixes for 3.3.0 from `main`.
+
+1. **Sentry token as an EAS secret** (once): create an organization token in Sentry (Settings, Developer Settings, Organization Tokens), then in your own terminal `npx eas-cli env:create --name SENTRY_AUTH_TOKEN --value <token> --visibility secret --environment production --environment preview`. It uploads source maps during builds. Never put it in the repo or in chat.
+2. **Build and test before anyone sees it:** `npx eas-cli build --platform ios --profile production` and the same for android. Install over the current store version on a phone that is signed in and check: still signed in, calculators work, a score saves, Saved Results opens.
+3. **Prove reporting works:** open a build with a temporary `Sentry.captureException(new Error('test'))` or use Sentry's "send test event" (it only works in a non-development build), and look for it in the Sentry project. Confirm the report has no email, username or IP address.
+4. **Store privacy answers:** App Store Connect, App Privacy: add Diagnostics, Crash Data, not linked to the user, not used for tracking. Google Play, Data safety: add Crash logs (under App info and performance) as collected, not shared, for analytics and app functionality. The privacy policy page in `site/privacy.html` is already updated in this release.
+5. **Submit** both stores, then after they are live you may publish updates for 3.4.0 (`npm run update:production`; with `SENTRY_AUTH_TOKEN` set in your shell the script also uploads the update's source maps).
+
+What is and is not sent: crashes and the errors the app reports on purpose (tagged with a short area label such as `save-score`), the app version, OS and device model. Never usernames, emails, IP addresses, scores, screenshots or what was typed. `components/errorScrub.js` removes personal data again before anything leaves the phone, and `tests/errorScrub.test.js` pins that. Development builds send nothing.
+
 ## Publishing a JavaScript or table fix
 
 1. Make the change on a branch and open a PR as usual (CI runs the scoring tests, lint and a bundle check).

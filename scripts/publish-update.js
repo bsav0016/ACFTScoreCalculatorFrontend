@@ -87,6 +87,17 @@ function main() {
     console.error('\neas update failed. Nothing was published unless eas-cli said so above.');
     process.exit(1);
   }
+
+  // Readable stack traces for this update: send its source maps to Sentry. Needs SENTRY_AUTH_TOKEN in this shell
+  // (the same token the builds use). Without it the update still works; its errors just show minified frames.
+  if (process.env.SENTRY_AUTH_TOKEN) {
+    const sentry = { SENTRY_ORG: 'brian-savidge', SENTRY_PROJECT: 'aft-score-calculator' };
+    if (!run(npx, ['sentry-expo-upload-sourcemaps', 'dist'], sentry)) {
+      console.error('\nThe update is published, but uploading its source maps to Sentry failed. Errors from it will be hard to read.');
+    }
+  } else {
+    console.log('\nNote: SENTRY_AUTH_TOKEN is not set in this shell, so source maps were not uploaded to Sentry.');
+  }
 }
 
 main();
