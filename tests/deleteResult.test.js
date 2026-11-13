@@ -24,12 +24,15 @@ describe('deleteSavedResult', () => {
     const result = await deleteSavedResult(respond(status), 7);
     expect(result.ok).toBe(false);
     expect(result.signedOut).toBeUndefined();
+    expect(result.status).toBe(status);
+    expect(result.network).toBeUndefined();
     expect(result.message).toMatch(/try again/i);
   });
 
   test('a network failure keeps the row', async () => {
     const result = await deleteSavedResult(jest.fn(async () => { throw new Error('offline'); }), 7);
     expect(result.ok).toBe(false);
+    expect(result.network).toBe(true);
     expect(result.message).toMatch(/connection/i);
   });
 });

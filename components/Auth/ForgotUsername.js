@@ -5,6 +5,8 @@ import Button from '../Button';
 import { Card, LabeledInput, ScrollIntoViewContext, useKeepFocusedVisible } from '../ui';
 import { colors, font, space } from '../theme';
 import { requestUsernameReminder } from '../session';
+import { notify } from '../notify';
+import { reportError } from '../errorReporting';
 
 export default function ForgotUsername(props) {
     const { scrollProps, ensureVisible } = useKeepFocusedVisible();
@@ -15,7 +17,7 @@ export default function ForgotUsername(props) {
 
     const send = async () => {
         if (!email.trim()) {
-            alert("Enter the email address you signed up with.")
+            notify("Enter the email address you signed up with.")
             return
         }
         setLoading(true)
@@ -25,13 +27,14 @@ export default function ForgotUsername(props) {
             setSent(true)
         }
         else if (result.kind === 'throttled') {
-            alert("Too many requests. Please try again in a while.")
+            notify("Too many requests. Please try again in a while.")
         }
         else if (result.kind === 'network') {
-            alert("Couldn't reach the server. Check your connection and try again.")
+            notify("Couldn't reach the server. Check your connection and try again.")
         }
         else {
-            alert("Something went wrong. Please try again.")
+            notify("Something went wrong. Please try again.")
+            reportError(new Error('Username reminder got an unexpected answer'), 'username-reminder')
         }
     }
 

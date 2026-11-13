@@ -6,6 +6,8 @@ import { Card, LabeledInput, ScrollIntoViewContext, useKeepFocusedVisible } from
 import { colors, font, space } from '../theme';
 import { confirmPasswordReset, requestPasswordReset } from '../session';
 import { newPasswordProblem, serverPasswordMessage } from '../passwordRules';
+import { notify } from '../notify';
+import { reportError } from '../errorReporting';
 
 const RESEND_SECONDS = 60; // the server sends at most one code a minute per account
 
@@ -31,7 +33,7 @@ export default function ForgotPassword(props) {
 
     const sendCode = async () => {
         if (!email.trim()) {
-            alert("Enter the email address you signed up with.")
+            notify("Enter the email address you signed up with.")
             return
         }
         setLoading(true)
@@ -42,51 +44,53 @@ export default function ForgotPassword(props) {
             setSecondsLeft(RESEND_SECONDS)
         }
         else if (result.kind === 'throttled') {
-            alert("Too many requests. Please try again in a while.")
+            notify("Too many requests. Please try again in a while.")
         }
         else if (result.kind === 'network') {
-            alert("Couldn't reach the server. Check your connection and try again.")
+            notify("Couldn't reach the server. Check your connection and try again.")
         }
         else {
-            alert("Something went wrong. Please try again.")
+            notify("Something went wrong. Please try again.")
+            reportError(new Error('Password reset request got an unexpected answer'), 'password-reset-request')
         }
     }
 
     const resetPassword = async () => {
         if (!email.trim()) {
-            alert("Enter the email address you signed up with.")
+            notify("Enter the email address you signed up with.")
             return
         }
         if (!/^\d{6}$/.test(code.trim())) {
-            alert("The code is six digits, from the email we sent you.")
+            notify("The code is six digits, from the email we sent you.")
             return
         }
         const problem = newPasswordProblem(password, confirmPassword)
         if (problem) {
-            alert(problem)
+            notify(problem)
             return
         }
         setLoading(true)
         const result = await confirmPasswordReset({ email, code, newPassword: password })
         setLoading(false)
         if (result.ok) {
-            alert("Your password has been changed. Sign in with your new password.")
+            notify("Your password has been changed. Sign in with your new password.", 'success')
             props.navigation.navigate("Auth")
         }
         else if (result.kind === 'invalid_code') {
-            alert("That code is not valid or has expired. Ask for a new one.")
+            notify("That code is not valid or has expired. Ask for a new one.")
         }
         else if (result.kind === 'weak') {
-            alert(serverPasswordMessage(result.messages))
+            notify(serverPasswordMessage(result.messages))
         }
         else if (result.kind === 'throttled') {
-            alert("Too many attempts. Please try again in a while.")
+            notify("Too many attempts. Please try again in a while.")
         }
         else if (result.kind === 'network') {
-            alert("Couldn't reach the server. Check your connection and try again.")
+            notify("Couldn't reach the server. Check your connection and try again.")
         }
         else {
-            alert("Something went wrong. Please try again.")
+            notify("Something went wrong. Please try again.")
+            reportError(new Error('Password reset confirm got an unexpected answer'), 'password-reset-confirm')
         }
     }
 
