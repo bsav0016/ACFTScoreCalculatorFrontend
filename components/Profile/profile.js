@@ -120,8 +120,12 @@ export default function Profile(props) {
   // A request that threw. A TypeError from fetch means the phone was offline; anything else (an unreadable reply)
   // is a bug worth knowing about. Either way the person is told instead of the failure being swallowed.
   const failed = (error, area) => {
-    notify("Couldn't reach the server. Check your connection and try again.")
-    if (!(error instanceof TypeError)) reportError(error, area)
+    if (error instanceof TypeError) {
+      notify("Couldn't reach the server. Check your connection and try again.")
+    } else {
+      notify('Something went wrong. Please try again.')
+      reportError(error, area)
+    }
   }
 
   const signOut = async () => {
