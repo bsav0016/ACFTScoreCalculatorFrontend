@@ -14,6 +14,7 @@ import WaistToHeightRatio from './components/WaistToHeightRatio/waistToHeightRat
 import AFTCalculator from './components/Calculator/aftCalculator';
 import AFTPlanner from './components/Calculator/AFTPlanner';
 import { colors, headerOptions } from './components/theme';
+import MessageHost from './components/MessageHost';
 
 const Stack = createNativeStackNavigator();
 
@@ -27,6 +28,7 @@ const screenLayout = ({ children }) => (
 
 export default function App() {
   return (
+    <View style={{ flex: 1 }}>
     <NavigationContainer theme={{ ...DarkTheme, colors: { ...DarkTheme.colors, background: colors.bg } }}>
       <Stack.Navigator 
         initialRouteName="Home"
@@ -45,5 +47,7 @@ export default function App() {
         <Stack.Screen name="ACFTResults" component={ACFTResults} options={{ title: "Saved Results" }}/>
       </Stack.Navigator>
     </NavigationContainer>
+    <MessageHost />
+    </View>
   );
 }

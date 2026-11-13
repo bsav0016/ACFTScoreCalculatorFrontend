@@ -7,6 +7,8 @@ import { Card, ScoreBadge } from '../ui';
 import { colors, font, radius, space } from '../theme';
 import TrendChart from './TrendChart';
 import { deleteSavedResult } from './deleteResult';
+import { notify } from '../notify';
+import { reportError } from '../errorReporting';
 import { fetchTarget, targetStatus } from './target';
 import { AFT_EVENTS, AFT_MAX_TOTAL, buildProgress, formatTime } from './progress';
 
@@ -114,7 +116,8 @@ export default function ACFTResults(props) {
     .then( res => res.json())
     .then( async res => {
         if (res.username === undefined) {
-          alert("Couldn't get your saved scores")
+          notify("Couldn't get your saved scores")
+          reportError(new Error('Saved scores response had no username'), 'load-saved-scores')
           props.navigation.navigate("Auth")
         }
         else {
@@ -122,7 +125,11 @@ export default function ACFTResults(props) {
           fetchTarget(authFetch).then(setTarget)
         }
     })
-    .catch( error => console.log(error))
+    .catch((error) => {
+      notify("Couldn't load your saved scores. Check your connection and try again.")
+      // A TypeError from fetch means the phone was offline; anything else is a bug worth knowing about.
+      if (!(error instanceof TypeError)) reportError(error, 'load-saved-scores')
+    })
   }
 
   const deleteAcftResult = async (id) => {
@@ -131,7 +138,10 @@ export default function ACFTResults(props) {
       setAcftResults((current) => current.filter((r) => r.id !== id))
       return
     }
-    alert(result.message)
+    notify(result.message)
+    if (!result.network && !result.signedOut) {
+      reportError(new Error(`Deleting a saved score failed with status ${result.status}`), 'delete-score')
+    }
     if (result.signedOut) props.navigation.navigate("Auth")
   }
 

@@ -22,6 +22,14 @@ export function scrubBreadcrumb(breadcrumb) {
   if (!breadcrumb) return breadcrumb;
   const next = { ...breadcrumb };
   if (typeof next.message === 'string') next.message = scrubText(next.message);
+  // A console breadcrumb carries whatever the code logged, including objects. Keep the short text, drop the rest.
+  if (next.category === 'console') {
+    if (typeof next.message === 'string') next.message = next.message.slice(0, 200);
+    if (next.data) {
+      next.data = { ...next.data };
+      delete next.data.arguments;
+    }
+  }
   if (next.data) {
     const data = { ...next.data };
     if (typeof data.url === 'string') data.url = scrubUrl(data.url);

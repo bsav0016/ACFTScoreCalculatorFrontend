@@ -46,6 +46,15 @@ describe('scrubBreadcrumb', () => {
     expect(scrubBreadcrumb(null)).toBeNull();
     expect(scrubBreadcrumb({ category: 'ui.click' })).toEqual({ category: 'ui.click' });
   });
+  test('console breadcrumbs keep a short scrubbed message and lose the logged arguments', () => {
+    const out = scrubBreadcrumb({
+      category: 'console', level: 'log', message: 'Error response: ' + 'x'.repeat(300) + ' a@b.com',
+      data: { logger: 'console', arguments: [{ email: ['user with this Email already exists.'], username: 'alice' }] },
+    });
+    expect(out.message.length).toBeLessThanOrEqual(200);
+    expect(out.data).toEqual({ logger: 'console' });
+  });
+
   test('cleans navigation breadcrumbs', () => {
     expect(scrubBreadcrumb({ category: 'navigation', data: { from: '/users/9', to: '/results?x=1' } }).data)
       .toEqual({ from: '/users/:id', to: '/results' });

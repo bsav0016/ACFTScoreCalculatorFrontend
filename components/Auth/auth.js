@@ -7,6 +7,8 @@ import Button from '../Button';
 import { backendUrl } from "../constants";
 import { Card, LabeledInput, ScrollIntoViewContext, useKeepFocusedVisible } from '../ui';
 import { colors, font, space } from '../theme';
+import { notify } from '../notify';
+import { reportError } from '../errorReporting';
 
 export default function Auth(props) {
     const { scrollProps, ensureVisible } = useKeepFocusedVisible();
@@ -46,11 +48,12 @@ export default function Auth(props) {
                 props.navigation.navigate("Profile")
             }
             else {
-                alert("Incorrect username or password");
+                notify("Incorrect username or password");
             }
         } catch (error) {
-            console.log(error)
-            alert("Couldn't reach the server. Check your connection and try again.")
+            notify("Couldn't reach the server. Check your connection and try again.")
+            // A TypeError from fetch means the phone was offline; anything else (an unreadable reply) is worth knowing.
+            if (!(error instanceof TypeError)) reportError(error, 'login')
         }
         setLoading(false)
     }
@@ -60,39 +63,39 @@ export default function Auth(props) {
             let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
             let tempEmail = email.replace(/\s+/g, '')
             if (username === '') {
-                alert("Username field must not be blank");
+                notify("Username field must not be blank");
                 return;
             }
             else if (username.length > 30) {
-                alert("Username field must not be more than 30 characters");
+                notify("Username field must not be more than 30 characters");
                 return;
             }
             else if (newPasswordProblem(password, confirmPassword)) {
-                alert(newPasswordProblem(password, confirmPassword));
+                notify(newPasswordProblem(password, confirmPassword));
                 return;
             }
             else if (reg.test(tempEmail) === false) {
-                alert("Must be valid email address");
+                notify("Must be valid email address");
                 return;
             }
             else if (tempEmail.length > 50) {
-                alert("Email must not be more than 50 characters");
+                notify("Email must not be more than 50 characters");
                 return;
             }
             else if (firstName === '') {
-                alert("First Name must not be blank");
+                notify("First Name must not be blank");
                 return;
             }
             else if (firstName.length > 30) {
-                alert("First Name must not be more than 30 characters");
+                notify("First Name must not be more than 30 characters");
                 return;
             }
             else if (lastName === '') {
-                alert("Last Name must not be blank");
+                notify("Last Name must not be blank");
                 return;
             }
             else if (lastName.length > 30) {
-                alert("Last Name must not be more than 30 characters");
+                notify("Last Name must not be more than 30 characters");
                 return;
             }
             setLoading(true);
@@ -107,22 +110,21 @@ export default function Auth(props) {
             .then( async res => {
                 const data = await res.json()
                 if (!res.ok) {
-                    console.log("Error response: ", data);
                     if (data.email && data.email[0].includes("user with this Email")) {
-                        alert('Email already taken')
+                        notify('Email already taken')
                     } else if (data.username && data.username[0].includes("user with this Username")) {
-                        alert('Username already taken')
+                        notify('Username already taken')
                     } else if (data.password) {
-                        alert(serverPasswordMessage(data.password))
+                        notify(serverPasswordMessage(data.password))
                     } else {
-                        alert("Unknown error")
+                        notify("Unknown error")
+                        reportError(new Error(`Registration failed with status ${res.status}`), 'register')
                     }
                     throw new Error("API error");
                 } 
                 return data
             })
             .then( async res => {
-                console.log(res);
                 let usernameField = res.username
                 let emailField = res.email
                 if (emailField === undefined) {
@@ -132,18 +134,18 @@ export default function Auth(props) {
                     usernameField = ["It's fine"]
                 }
                 if (emailField.includes("user with this Email already exists.")){
-                    alert("Email is already in use");
+                    notify("Email is already in use");
                     setLoading(false);
                     return;
                 }
                 else if (usernameField.includes("user with this Username already exists.")) {
-                    alert("Username already in use");
+                    notify("Username already in use");
                     setLoading(false);
                     return;
                 }
                 else if (res.id === undefined) {
-                    console.log(res)
-                    alert("Unknown error")
+                    notify("Unknown error")
+                    reportError(new Error('Registration reply had no account id'), 'register')
                     setLoading(false)
                     return
                 }
@@ -153,7 +155,11 @@ export default function Auth(props) {
                 setLoading(false);
             })
             .catch(error => {
-                console.log(error);
+                // "API error" was already explained to the person above; anything else is a network or reading failure.
+                if (error.message !== "API error") {
+                    notify("Couldn't reach the server. Check your connection and try again.")
+                    if (!(error instanceof TypeError)) reportError(error, 'register')
+                }
                 setLoading(false);
             })
         }
