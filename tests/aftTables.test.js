@@ -1,10 +1,4 @@
 import { EVENTS } from '../components/Calculator/aftScoring';
-import acftDeadlift from '../components/ACFTCalculator/Scores/deadliftScores';
-import acftPushups from '../components/ACFTCalculator/Scores/pushupScores';
-import acftSDC from '../components/ACFTCalculator/Scores/SDCScores';
-import acftPlank from '../components/ACFTCalculator/Scores/plankScores';
-import acftRun from '../components/ACFTCalculator/Scores/runScores';
-import acftBall from '../components/ACFTCalculator/Scores/ballThrowScores';
 import { isPlaceholder } from './helpers';
 
 // Each row is [score, 20 age/sex columns, score]. These tests guard the shape of the data itself, so a bad edit to a
@@ -88,21 +82,4 @@ test('SDC and plank tables have one row for every score from 100 to 0', () => {
     const scores = EVENTS.find(event => event.key === key).table.map(row => row[0]);
     expect(scores).toEqual(Array.from({ length: 101 }, (_, i) => 100 - i));
   }
-});
-
-// The ACFT tables ship as "Historical Standards". Their placeholder conventions differ, so only the shape is checked.
-describe.each([
-  ['deadlift', acftDeadlift], ['push-ups', acftPushups], ['SDC', acftSDC],
-  ['plank', acftPlank], ['2MR', acftRun], ['ball throw', acftBall],
-])('ACFT %s table', (name, table) => {
-  test('every row has 22 finite cells, starts at 100 points, ends at 0 and never goes up', () => {
-    for (const row of table) {
-      expect(row).toHaveLength(ROW_LENGTH);
-      for (const cell of row) expect(Number.isFinite(cell)).toBe(true);
-    }
-    const scores = table.map(row => row[0]);
-    expect(scores[0]).toBe(100);
-    expect(scores[scores.length - 1]).toBe(0);
-    scores.forEach((score, i) => { if (i > 0) expect(score).toBeLessThanOrEqual(scores[i - 1]); });
-  });
 });

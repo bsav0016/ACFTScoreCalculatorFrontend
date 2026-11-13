@@ -41,18 +41,6 @@ export default function Home(props) {
           onPress={() => props.navigation.navigate("WaistToHeightRatio")}
         />
 
-        <SectionLabel style={{marginTop: space.xl}}>Historical standards</SectionLabel>
-        <MenuItem
-          title="ACFT Calculator"
-          subtitle="Army Combat Fitness Test scoring"
-          onPress={() => props.navigation.navigate("ACFTCalculator")}
-        />
-        <MenuItem
-          title="H/W & Body Fat %"
-          subtitle="Height, weight and tape-test body fat"
-          onPress={() => props.navigation.navigate("BodyFatCalculator")}
-        />
-
         <SectionLabel style={{marginTop: space.xl}}>More</SectionLabel>
         <MenuItem
           title="User Account"
