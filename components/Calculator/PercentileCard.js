@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { backendUrl } from '../constants';
+import { reportOnce } from '../errorReporting';
 import { colors, font, radius, space } from '../theme';
 
 const GROUP_STORAGE_KEY = 'aft_percentile_group_by';
@@ -58,13 +59,13 @@ export default function PercentileCard({ scores, age, maleOrCombat }) {
   useEffect(() => {
     AsyncStorage.getItem(GROUP_STORAGE_KEY)
       .then(stored => { if (stored !== null) setGroupBy(JSON.parse(stored)); })
-      .catch(console.log);
+      .catch(() => {}); // a saved grouping that cannot be read just falls back to the default
   }, []);
 
   const toggleGroup = (key) => {
     const next = groupBy.includes(key) ? groupBy.filter(g => g !== key) : [...groupBy, key];
     setGroupBy(next);
-    AsyncStorage.setItem(GROUP_STORAGE_KEY, JSON.stringify(next)).catch(console.log);
+    AsyncStorage.setItem(GROUP_STORAGE_KEY, JSON.stringify(next)).catch(() => {}); // the choice just is not remembered
   };
 
   const scoresKey = JSON.stringify(scores);
@@ -98,7 +99,8 @@ export default function PercentileCard({ scores, age, maleOrCombat }) {
         setFailed(false);
       } catch (error) {
         if (thisRequest !== requestId.current) return;
-        console.log(error);
+        // Offline (a fetch TypeError) and the 8 second timeout are normal on a phone; anything else is not.
+        if (error.name !== 'AbortError' && !(error instanceof TypeError)) reportOnce(error, 'percentiles');
         setFailed(true);
       }
     }, DEBOUNCE_MS);
