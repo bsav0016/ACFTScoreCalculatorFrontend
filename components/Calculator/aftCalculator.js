@@ -4,7 +4,8 @@ import ACFTBannerAd from "../ACFTBannerAd";
 import * as StoreReview from 'expo-store-review';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import { authFetch, getSession } from '../session';
-import Dialog from 'react-native-dialog';
+import DatePickerModal from './DatePickerModal';
+import { todayParts } from './calendar';
 import ReactNativeZoomableView from '@openspacelabs/react-native-zoomable-view/src/ReactNativeZoomableView';
 import PercentileCard from './PercentileCard';
 import { Card, ChartModal, CompactInput, EventRow, InputRow, ScrollIntoViewContext, Segmented, Toast, TotalBar, useKeepFocusedVisible, useToast } from '../ui';
@@ -41,9 +42,8 @@ const AFTCalculator = (props) => {
   const { toast, showToast, hideToast } = useToast();
   const saving = useRef(false);
 
-  const [month, setMonth] = useState(1);
-  const [day, setDay] = useState(1);
-  const [year, setYear] = useState(2024);
+  // The date the picker opens on: today, refreshed each time the save dialog opens.
+  const [testDate, setTestDate] = useState(todayParts);
 
   const deadliftRef = useRef();
   const pushupRef = useRef();
@@ -263,6 +263,7 @@ const AFTCalculator = (props) => {
     }
     else{
       setDateError('');
+      setTestDate(todayParts());
       setVisibleDate(true);
     }
   }
@@ -284,7 +285,7 @@ const AFTCalculator = (props) => {
     )
   }
 
-  const saveScore = () => {
+  const saveScore = ({ year, month, day }) => {
     // Shown inside the dialog: an alert() raised over a Modal can fail to appear on iOS, which looked like Confirm
     // doing nothing.
     const problem = validateTestDate({ day, month, year });
@@ -453,27 +454,14 @@ const AFTCalculator = (props) => {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        <Dialog.Container visible={visibleDate}>
-          <Dialog.Title>Input Test Date</Dialog.Title>
-          <Dialog.Description>
-            Please input the test date.
-          </Dialog.Description>
-          <View style={calculatorStyles.inputContainer}>
-            <Dialog.Description>Day:</Dialog.Description>
-            <Dialog.Input placeholder={"Day"} onChangeText={setDay}/>
-          </View>
-          <View style={calculatorStyles.inputContainer}>
-            <Dialog.Description>Month:</Dialog.Description>
-            <Dialog.Input placeholder={"Month (0-12)"} onChangeText={setMonth}/>
-          </View>
-          <View style={calculatorStyles.inputContainer}>
-            <Dialog.Description>Year:</Dialog.Description>
-            <Dialog.Input placeholder={"Year"} onChangeText={setYear}/>
-          </View>
-          {dateError ? <Dialog.Description style={{color: colors.danger}}>{dateError}</Dialog.Description> : null}
-          <Dialog.Button label="Cancel" onPress={() => setVisibleDate(false)} />
-          <Dialog.Button label="Confirm" onPress={saveScore} />
-        </Dialog.Container>
+        <DatePickerModal
+          visible={visibleDate}
+          value={testDate}
+          error={dateError}
+          confirmLabel="Save score"
+          onCancel={() => setVisibleDate(false)}
+          onConfirm={saveScore}
+        />
 
         <ScrollIntoViewContext.Provider value={ensureVisible}>
         <Card style={{paddingVertical: space.md}}>
