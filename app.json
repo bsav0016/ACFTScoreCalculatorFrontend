@@ -5,6 +5,7 @@
     "slug": "UpdatedACFTScoreCalculator",
     "version": "3.3.0",
     "owner": "bsav0016",
+    "platforms": ["ios", "android"],
     "assetBundlePatterns": [
       "**/*"
     ],
