@@ -6,7 +6,7 @@ import { createSession } from './sessionCore';
 // The signed-in state of this phone. See sessionCore.js for what each function does.
 export const {
   getSession, setSession, clearSession, hasSession, authFetch, signOut,
-  requestPasswordReset, confirmPasswordReset, changePassword,
+  requestPasswordReset, requestUsernameReminder, confirmPasswordReset, changePassword,
 } = createSession({
   secureStore: SecureStore,
   asyncStorage: AsyncStorage,

@@ -216,6 +216,34 @@ describe('requestPasswordReset', () => {
   });
 });
 
+describe('requestUsernameReminder', () => {
+  test('posts the trimmed email without a token', async () => {
+    const { session, calls } = setup();
+    await session.setSession('tok', 1);
+    const result = await session.requestUsernameReminder('  a@b.com ');
+    expect(result).toEqual({ ok: true });
+    expect(calls[0].url).toBe('https://api.test/api/users/forgot_username/');
+    expect(JSON.parse(calls[0].options.body)).toEqual({ email: 'a@b.com' });
+    expect(calls[0].options.headers.Authorization).toBeUndefined();
+  });
+
+  test('does not touch the stored login', async () => {
+    const { session } = setup();
+    await session.setSession('tok', 1);
+    await session.requestUsernameReminder('a@b.com');
+    expect(await session.hasSession()).toBe(true);
+  });
+
+  test('maps throttling, network and other failures', async () => {
+    expect((await setup(() => jsonResponse(429, {})).session.requestUsernameReminder('a@b.com')).kind).toBe('throttled');
+    expect((await setup(() => jsonResponse(500, {})).session.requestUsernameReminder('a@b.com')).kind).toBe('unknown');
+    expect((await setup(() => jsonResponse(400, {})).session.requestUsernameReminder('a@b.com')).kind).toBe('unknown');
+    const offline = setup();
+    offline.fetchFn.mockRejectedValue(new Error('offline'));
+    expect((await offline.session.requestUsernameReminder('a@b.com')).kind).toBe('network');
+  });
+});
+
 describe('confirmPasswordReset', () => {
   const args = { email: ' a@b.com ', code: ' 123456 ', newPassword: 'harbor-light-77' };
 

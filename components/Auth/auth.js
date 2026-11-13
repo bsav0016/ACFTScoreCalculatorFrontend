@@ -255,6 +255,14 @@ export default function Auth(props) {
                     style={{marginTop: space.sm}}
                 />
                 }
+                {!regView &&
+                <Button
+                    variant="text"
+                    onPress={() => props.navigation.navigate("ForgotUsername")}
+                    title="Forgot your username?"
+                    style={{marginTop: space.sm}}
+                />
+                }
                 <Button
                     variant="text"
                     onPress={() => toggleView()}
