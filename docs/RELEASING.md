@@ -4,7 +4,7 @@ Two kinds of release:
 
 | Kind | What changes | How it ships | Reaches users |
 | --- | --- | --- | --- |
-| **Over-the-air update** | JavaScript and data only (scoring tables, screens, text) | `npm run update:production` | Minutes after publishing, on the next launch of an installed build that has `expo-updates` |
+| **Over-the-air update** | JavaScript and data only (scoring tables, screens, text) | `npm run update:production` | Minutes after publishing, on the next launch of an installed build that has `expo-updates` (on that first launch if the download takes under 3 seconds, otherwise on the one after) |
 | **Store release** | Anything native: a new Expo SDK, a native module, permissions, `app.json` native settings, a new app version | `eas build` then `eas submit`, then App Store / Play review | Days, as people update |
 
 **Rule of thumb:** if the change could not run in the app that is already installed, it is a store release. When unsure, it is a store release.
@@ -61,7 +61,7 @@ What is and is not sent: crashes and the errors the app reports on purpose (tagg
    ```
    npm run update:preview
    ```
-   This refuses to run with uncommitted changes, runs `npm test`, `npm run lint` and `npm run build:check`, then publishes to the `preview` channel. Open a preview build (an internal or TestFlight build made with `eas build --profile preview`), force-quit and reopen the app twice (the update downloads on the first launch and applies on the second), and check the fix. The About screen will show the update id once stage 3 of the update work is in.
+   This refuses to run with uncommitted changes, runs `npm test`, `npm run lint` and `npm run build:check`, then publishes to the `preview` channel. Open a preview build (an internal or TestFlight build made with `eas build --profile preview`), force-quit and reopen the app (the update is applied on that launch if it downloads within 3 seconds; on a slow connection it downloads then and applies on the next, so reopen once more), and check the fix. The About screen will show the update id once stage 3 of the update work is in.
 3. Merge the PR.
 4. Publish to everyone, from an up-to-date `main`:
    ```
@@ -97,6 +97,12 @@ A rollback cannot recall the update from phones that already applied it and neve
 2. The backend keeps a copy of the shared table and pins its hash (backend `#19`); update it in the same change.
 3. Update the "Current as of" date on the home screen and in `app.json` (stage 3 of the update work makes this come from the table data).
 4. Ship the frontend as an update (above), and deploy the backend change.
+
+## Updates on the first open
+
+`app.json` sets `updates.fallbackToCacheTimeout` to 3000. At launch the app checks for an update and, if one exists, holds the splash screen for up to 3 seconds while it downloads, so it starts on the new code straight away. If the download is not done in time the app starts on the code it already has and the update applies on the next launch. The check is quick when there is nothing new; the cost is that on a very slow connection every start can wait up to 3 seconds.
+
+This value is read by the native build, so it only takes effect in builds made after it was set (3.4.0 and later). Phones on 3.3.0 keep applying updates on the second launch.
 
 ## Rules
 

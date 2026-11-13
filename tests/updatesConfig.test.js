@@ -20,9 +20,12 @@ describe('over-the-air updates', () => {
     expect(app.runtimeVersion).toEqual({ policy: 'appVersion' });
   });
 
-  test('checks on launch without holding up the screen', () => {
+  // The app waits up to this long at launch for a new update to download, so it can start on the new code straight
+  // away. Too short and updates apply a launch late; too long and a slow connection delays every start.
+  test('checks on launch and waits a few seconds so an update applies on the first open', () => {
     expect(app.updates.checkAutomatically).toBe('ON_LOAD');
-    expect(app.updates.fallbackToCacheTimeout).toBe(0);
+    expect(app.updates.fallbackToCacheTimeout).toBeGreaterThanOrEqual(2000);
+    expect(app.updates.fallbackToCacheTimeout).toBeLessThanOrEqual(5000);
   });
 
   test('builds each profile for its own channel', () => {
