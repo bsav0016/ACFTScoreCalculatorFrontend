@@ -3,6 +3,7 @@ import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { backendUrl } from '../constants';
 import { reportOnce } from '../errorReporting';
+import { isNetworkFailure } from '../networkError';
 import { colors, font, radius, space } from '../theme';
 
 const GROUP_STORAGE_KEY = 'aft_percentile_group_by';
@@ -99,8 +100,9 @@ export default function PercentileCard({ scores, age, maleOrCombat }) {
         setFailed(false);
       } catch (error) {
         if (thisRequest !== requestId.current) return;
-        // Offline (a fetch TypeError) and the 8 second timeout are normal on a phone; anything else is not.
-        if (error.name !== 'AbortError' && !(error instanceof TypeError)) reportOnce(error, 'percentiles');
+        // Offline, a dropped connection and a cancelled request (our 8 second timeout, or the app being backgrounded)
+        // are normal on a phone; anything else is not.
+        if (!isNetworkFailure(error)) reportOnce(error, 'percentiles');
         setFailed(true);
       }
     }, DEBOUNCE_MS);
