@@ -11,6 +11,8 @@ import PercentileCard from './PercentileCard';
 import { Card, ChartModal, CompactInput, EventRow, InputRow, ScrollIntoViewContext, Segmented, Toast, TotalBar, useKeepFocusedVisible, useToast } from '../ui';
 import { describeSaveResult, validateTestDate } from './saveScore';
 import { buildShareMessage, canShareScores } from './shareScore';
+import { askForReviewIfDue } from './reviewPrompt';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { notify } from '../notify';
 import { reportError } from '../errorReporting';
 import { colors, font, space } from '../theme';
@@ -82,12 +84,6 @@ const AFTCalculator = (props) => {
       'keyboardDidHide',
       () => setKeyboardOpen(false)
     );
-
-    if (Math.random() < 0.1) {
-      if (StoreReview.hasAction()) {
-        StoreReview.requestReview()
-      }
-    }
 
     return () => {
       keyboardDidShowListener.remove();
@@ -350,6 +346,17 @@ const AFTCalculator = (props) => {
       saving.current = false;
     }
     showToast(result.message, result.type);
+    if (result.type === 'success') askForReview();
+  }
+
+  // After something went well (a score saved or shared), not while typing numbers. Waits a moment so the toast shows first.
+  const askForReview = () => {
+    setTimeout(() => {
+      askForReviewIfDue({
+        store: { get: (key) => AsyncStorage.getItem(key), set: (key, value) => AsyncStorage.setItem(key, value) },
+        review: StoreReview,
+      });
+    }, 2000);
   }
   
   const timeFormat = (minutes, seconds) => {
@@ -459,7 +466,8 @@ const AFTCalculator = (props) => {
     const message = buildShareMessage(percentileScores, Platform.OS)
     if (!message) return
     try {
-      await Share.share({ message })
+      const outcome = await Share.share({ message })
+      if (outcome.action === Share.sharedAction) askForReview()
     } catch (error) {
       reportError(error, 'share-score')
       notify("Couldn't open the share sheet.")
