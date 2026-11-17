@@ -11,7 +11,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { appStoreLink, playStoreLink } = require('./growthLinks');
+const { appStoreLink, playStoreLink } = require('../components/growthLinks');
 
 const SITE_URL = 'https://bsav0016.github.io/ACFTScoreCalculatorFrontend';
 const ROOT = path.join(__dirname, '..');

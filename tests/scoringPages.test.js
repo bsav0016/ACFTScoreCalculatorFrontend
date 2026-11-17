@@ -3,7 +3,7 @@ import path from 'path';
 import { EVENTS as APP_EVENTS, columnFor, rawNeeded } from '../components/Calculator/aftScoring';
 
 const { AGE_GROUPS, STANDARDS, EVENTS, PASSING, minimumFor, buildAll, pageName } = require('../scripts/build-scoring-pages');
-const { appStoreLink, playStoreLink } = require('../scripts/growthLinks');
+const { appStoreLink, playStoreLink } = require('../components/growthLinks');
 
 const tables = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'aft_tables_250601.json'), 'utf8'));
 const generated = buildAll(tables);

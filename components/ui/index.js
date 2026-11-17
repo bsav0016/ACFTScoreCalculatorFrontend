@@ -268,7 +268,7 @@ export function EventRow({ field }) {
 }
 
 // Sticky footer with the running total and the Save / Clear actions.
-export function TotalBar({ total, max, canSave, onSave, onClear, compact }) {
+export function TotalBar({ total, max, canSave, onSave, onClear, canShare, onShare, compact }) {
   if (compact) {
     // Keyboard is up: keep the running total visible but give the space back to the form.
     return (
@@ -292,6 +292,7 @@ export function TotalBar({ total, max, canSave, onSave, onClear, compact }) {
       </View>
       <View style={styles.totalActions}>
         <Button variant="text" title="Clear" onPress={onClear} />
+        {canShare && <Button variant="text" title="Share" onPress={onShare} />}
         {canSave && <Button title="Save score" onPress={onSave} style={styles.saveButton} />}
       </View>
     </View>
