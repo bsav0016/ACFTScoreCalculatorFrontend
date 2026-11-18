@@ -11,7 +11,7 @@ const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=org.name.U
 // The App Store only attributes a campaign link when it also carries the account's provider token ("pt"), shown in
 // App Store Connect when you build a campaign link there. It is public (it is in every campaign link) and not a
 // secret. Leave it empty until it is known: links then carry the campaign name but the App Store will not report on it.
-const APP_STORE_PROVIDER_TOKEN = '';
+const APP_STORE_PROVIDER_TOKEN = '122126127';
 
 const CAMPAIGN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
