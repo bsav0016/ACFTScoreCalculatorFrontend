@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Image, Text, View, KeyboardAvoidingView, Platform, Keyboard, TouchableOpacity, Alert, ScrollView, StyleSheet } from 'react-native';
+import { Image, Text, View, KeyboardAvoidingView, Platform, Keyboard, TouchableOpacity, Alert, ScrollView, StyleSheet, Share } from 'react-native';
 import ACFTBannerAd from "../ACFTBannerAd";
 import * as StoreReview from 'expo-store-review';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
@@ -10,6 +10,7 @@ import ReactNativeZoomableView from '@openspacelabs/react-native-zoomable-view/s
 import PercentileCard from './PercentileCard';
 import { Card, ChartModal, CompactInput, EventRow, InputRow, ScrollIntoViewContext, Segmented, Toast, TotalBar, useKeepFocusedVisible, useToast } from '../ui';
 import { describeSaveResult, validateTestDate } from './saveScore';
+import { buildShareMessage, canShareScores } from './shareScore';
 import { notify } from '../notify';
 import { reportError } from '../errorReporting';
 import { colors, font, space } from '../theme';
@@ -452,6 +453,19 @@ const AFTCalculator = (props) => {
     percentileScores.total = totalScore
   }
 
+  // Shared as plain text through the share sheet, once all five events are in.
+  const shareReady = canShareScores(percentileScores)
+  const shareResult = async () => {
+    const message = buildShareMessage(percentileScores, Platform.OS)
+    if (!message) return
+    try {
+      await Share.share({ message })
+    } catch (error) {
+      reportError(error, 'share-score')
+      notify("Couldn't open the share sheet.")
+    }
+  }
+
   const Container = Platform.OS === 'ios' ? KeyboardAvoidingView : View;
   return (
     <Container style={{flex: 1, backgroundColor: colors.bg}} behavior="padding">
@@ -528,7 +542,7 @@ const AFTCalculator = (props) => {
         </ChartModal>
         <SourceNote sources={[SOURCES.aft]}/>
       </ScrollView>
-      <TotalBar total={totalScore} max={500} canSave={visibleSave} onSave={verifyLoggedIn} onClear={clearScore} compact={keyboardOpen}/>
+      <TotalBar total={totalScore} max={500} canSave={visibleSave} onSave={verifyLoggedIn} onClear={clearScore} canShare={shareReady} onShare={shareResult} compact={keyboardOpen}/>
       {!keyboardOpen && <ACFTBannerAd/>}
       <Toast toast={toast} onHide={hideToast}/>
     </Container>
