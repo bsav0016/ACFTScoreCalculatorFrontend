@@ -7,3 +7,11 @@ h1 { font-size:28px; margin:24px 0 8px; } h2 { font-size:20px; margin:28px 0 4px
 a { color:var(--brand); } ul { padding-left:22px; } .step { margin:6px 0; }
 nav { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px; font-weight:600; }
 footer { color:var(--muted); font-size:14px; margin-top:24px; }
+.scroll { overflow-x:auto; }
+table.chart { border-collapse:collapse; width:100%; font-size:14px; font-variant-numeric:tabular-nums; }
+table.chart th, table.chart td { border:1px solid var(--line); padding:4px 8px; text-align:right; white-space:nowrap; }
+table.chart thead th { background:var(--bg); position:sticky; top:0; }
+table.chart th[scope=row] { text-align:left; background:var(--bg); }
+table.narrow { max-width:360px; }
+.cta { border:1px solid var(--line); border-radius:12px; padding:4px 16px 12px; margin:24px 0; background:var(--bg); }
+.button { display:inline-block; margin:4px 8px 4px 0; padding:8px 14px; border-radius:10px; background:var(--brand); color:#000; font-weight:600; text-decoration:none; }
