@@ -18,7 +18,7 @@ export default function About() {
 
   const openPrivacy = () => open('https://bsav0016.github.io/ACFTScoreCalculatorFrontend/privacy.html', 'the privacy policy')
 
-  const openTerms = () => open('https://frameonapp.weebly.com/updated-acft-score-calculator-terms-and-conditions.html', 'the terms')
+  const openTerms = () => open('https://bsav0016.github.io/ACFTScoreCalculatorFrontend/terms.html', 'the terms')
 
   const openEmail = () => open('mailto:savidgeapps@gmail.com', 'your mail app')
 
