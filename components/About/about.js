@@ -9,20 +9,18 @@ import { TABLE_VERSION } from '../Calculator/standards';
 import { describeBuild } from '../buildLabel';
 import SourceNote from '../SourceNote';
 import { SOURCES } from '../sources';
+import { openLink } from '../openLink';
+import { notify } from '../notify';
 
 export default function About() {
 
-  const openPrivacy = () => {
-    Linking.openURL('https://frameonapp.weebly.com/updated-acft-score-calculator-privacy-policy.html')
-  }
+  const open = (url, what) => openLink(url, { linking: Linking, notify, what })
 
-  const openTerms = () => {
-    Linking.openURL('https://frameonapp.weebly.com/updated-acft-score-calculator-terms-and-conditions.html')
-  }
+  const openPrivacy = () => open('https://bsav0016.github.io/ACFTScoreCalculatorFrontend/privacy.html', 'the privacy policy')
 
-  const openEmail = () => {
-    Linking.openURL('mailto:savidgeapps@gmail.com')
-  }
+  const openTerms = () => open('https://frameonapp.weebly.com/updated-acft-score-calculator-terms-and-conditions.html', 'the terms')
+
+  const openEmail = () => open('mailto:savidgeapps@gmail.com', 'your mail app')
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: colors.bg}}>
