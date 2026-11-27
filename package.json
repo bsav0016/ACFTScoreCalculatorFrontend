@@ -54,19 +54,47 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.13",
+    "@testing-library/react-native": "^14.1.0",
     "eslint": "^9.39.5",
     "eslint-config-expo": "^57.0.2",
     "jest": "^30.5.2",
+    "jest-expo": "~57.0.6",
+    "react-test-renderer": "^19.2.3",
     "yarn-upgrade-all": "^0.8.1"
   },
   "private": true,
   "jest": {
-    "testEnvironment": "node",
-    "roots": [
-      "<rootDir>/tests"
-    ],
-    "testMatch": [
-      "**/*.test.js"
+    "projects": [
+      {
+        "displayName": "logic",
+        "testEnvironment": "node",
+        "roots": [
+          "<rootDir>/tests"
+        ],
+        "testMatch": [
+          "**/*.test.js"
+        ],
+        "testPathIgnorePatterns": [
+          "/node_modules/",
+          "<rootDir>/tests/ui/"
+        ]
+      },
+      {
+        "displayName": "ui",
+        "preset": "jest-expo",
+        "roots": [
+          "<rootDir>/tests/ui"
+        ],
+        "testMatch": [
+          "**/*.test.js"
+        ],
+        "setupFilesAfterEnv": [
+          "<rootDir>/tests/ui/setup.js"
+        ],
+        "transformIgnorePatterns": [
+          "node_modules/(?!(.pnpm/)?((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|@fortawesome/.*|@openspacelabs/.*))"
+        ]
+      }
     ]
   },
   "expo": {
