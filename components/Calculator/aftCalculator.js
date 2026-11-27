@@ -20,6 +20,7 @@ import calculatorStyles from './calculatorStyles';
 import SourceNote from '../SourceNote';
 import { SOURCES } from '../sources';
 import { EVENTS, columnFor, scoreFor } from './aftScoring';
+import { useScoreAnnouncements } from './useScoreAnnouncements';
 
 
 const AFTCalculator = (props) => {
@@ -438,6 +439,12 @@ const AFTCalculator = (props) => {
       ref2: runSecRef, onCT2: setRunSec, onSE2: () => {}, bos2: true
     }
   ]    
+
+  // Said aloud for screen readers once typing settles (see announce.js).
+  useScoreAnnouncements(
+    { deadlift: deadliftScore, pushups: pushupScore, sdc: sdcScore, plank: plankScore, tmr: runScore },
+    { deadlift: deadlift !== '', pushups: pushups !== '', sdc: sdcMin !== '' || sdcSec !== '', plank: plankMin !== '' || plankSec !== '', tmr: runMin !== '' || runSec !== '' },
+  );
 
   // Only rank events the user has actually entered; the total only counts once all five are in.
   const enteredEvents = {
