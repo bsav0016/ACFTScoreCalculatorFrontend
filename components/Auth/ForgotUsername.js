@@ -43,7 +43,7 @@ export default function ForgotUsername(props) {
             <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <ScrollIntoViewContext.Provider value={ensureVisible}>
             <ScrollView {...scrollProps} contentContainerStyle={{padding: space.lg}} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-                <Text style={font.title}>Find your username</Text>
+                <Text style={font.title} accessibilityRole="header">Find your username</Text>
                 <Text style={[font.caption, {marginTop: 4, marginBottom: space.lg}]}>
                     {sent
                         ? "If that email belongs to an account, we've sent the username to it. Check your spam folder if it doesn't arrive within a few minutes."

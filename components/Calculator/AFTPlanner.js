@@ -66,7 +66,7 @@ export default function AFTPlanner(props) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
         <View style={styles.empty}>
-          <Text style={font.heading}>Enter your age first</Text>
+          <Text style={font.heading} accessibilityRole="header">Enter your age first</Text>
           <Text style={[font.caption, { textAlign: 'center', marginVertical: space.md }]}>
             The planner needs your age to know which scoring table to use.
           </Text>
@@ -107,16 +107,17 @@ export default function AFTPlanner(props) {
         </Card>
 
         <Card>
-          <Text style={font.heading}>Your goal</Text>
+          <Text style={font.heading} accessibilityRole="header">Your goal</Text>
           <Field label="Target total" value={targetText} onChangeText={changeTarget} placeholder={String(MAX_TOTAL)}
             returnKeyType="done" />
           <View style={styles.chips}>
             {[25, 50].map(points => (
-              <TouchableOpacity key={points} onPress={() => setQuick(total + points)} style={styles.chip}>
+              <TouchableOpacity key={points} onPress={() => setQuick(total + points)} accessibilityRole="button"
+                accessibilityLabel={`Set target to ${Math.min(total + points, MAX_TOTAL)}, plus ${points} points`} style={styles.chip}>
                 <Text style={styles.chipText}>+{points}</Text>
               </TouchableOpacity>
             ))}
-            <TouchableOpacity onPress={() => setQuick(MAX_TOTAL)} style={styles.chip}>
+            <TouchableOpacity onPress={() => setQuick(MAX_TOTAL)} accessibilityRole="button" style={styles.chip}>
               <Text style={styles.chipText}>Max {MAX_TOTAL}</Text>
             </TouchableOpacity>
           </View>
@@ -139,7 +140,7 @@ export default function AFTPlanner(props) {
 
         {validTarget &&
           <Card>
-            <Text style={font.heading}>To reach {target} (+{target - total})</Text>
+            <Text style={font.heading} accessibilityRole="header">To reach {target} (+{target - total})</Text>
             <Text style={[font.caption, { marginBottom: space.sm }]}>
               The points are split evenly across your events. Any mix that adds up works.
             </Text>

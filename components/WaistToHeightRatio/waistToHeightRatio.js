@@ -101,13 +101,13 @@ export default function WaistToHeightRatio(props) {
                     </Text>
 
                     <Card>
-                        <Text style={font.heading}>Height</Text>
+                        <Text style={font.heading} accessibilityRole="header">Height</Text>
                         <Field label="Height (in)" value={height} onChangeText={setHeight} placeholder="e.g. 68"
                             onSubmitEditing={() => waist1Ref.current.focus()}/>
                     </Card>
 
                     <Card>
-                        <Text style={font.heading}>Waist measurements</Text>
+                        <Text style={font.heading} accessibilityRole="header">Waist measurements</Text>
                         <Field label="Measurement 1" value={waist1} onChangeText={setWaist1} placeholder="e.g. 34.5"
                             inputRef={waist1Ref} onSubmitEditing={() => waist2Ref.current.focus()}/>
                         <Field label="Measurement 2" value={waist2} onChangeText={setWaist2} placeholder="e.g. 34.5"

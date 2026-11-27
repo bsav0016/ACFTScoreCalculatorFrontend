@@ -191,7 +191,7 @@ export default function Auth(props) {
             <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <ScrollIntoViewContext.Provider value={ensureVisible}>
             <ScrollView {...scrollProps} contentContainerStyle={{padding: space.lg}} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-                <Text style={font.title}>{regView ? "Create account" : "Welcome back"}</Text>
+                <Text style={font.title} accessibilityRole="header">{regView ? "Create account" : "Welcome back"}</Text>
                 <Text style={[font.caption, {marginTop: 4, marginBottom: space.lg}]}>
                     {regView ? "Save your scores and see how you rank." : "Sign in to save scores and see your history."}
                 </Text>

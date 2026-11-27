@@ -7,7 +7,7 @@ import { DISCLAIMER } from './sources';
 export default function SourceNote({ sources, disclaimer = true }) {
   return (
     <Card>
-      <Text style={font.heading}>Sources</Text>
+      <Text style={font.heading} accessibilityRole="header">Sources</Text>
       {sources.map((src) => (
         <TouchableOpacity key={src.url} onPress={() => Linking.openURL(src.url)} accessibilityRole="link"
           style={{ marginTop: space.sm }}>

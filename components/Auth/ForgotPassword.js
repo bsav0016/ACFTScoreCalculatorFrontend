@@ -101,7 +101,7 @@ export default function ForgotPassword(props) {
             <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <ScrollIntoViewContext.Provider value={ensureVisible}>
             <ScrollView {...scrollProps} contentContainerStyle={{padding: space.lg}} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-                <Text style={font.title}>Reset your password</Text>
+                <Text style={font.title} accessibilityRole="header">Reset your password</Text>
                 <Text style={[font.caption, {marginTop: 4, marginBottom: space.lg}]}>
                     {emailStep
                         ? "Enter the email address you signed up with and we'll send you a six-digit code."
