@@ -1,4 +1,5 @@
-import { Text, SafeAreaView, ScrollView } from 'react-native';
+import { SafeAreaView, ScrollView } from 'react-native';
+import { Text } from '../text';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import ACFTBannerAd from '../ACFTBannerAd';
 import { hasSession } from '../session';

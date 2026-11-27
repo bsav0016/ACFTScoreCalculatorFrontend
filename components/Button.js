@@ -1,5 +1,6 @@
 import React from 'react';
-import { Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet } from 'react-native';
+import { Text } from './text';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { colors, radius } from './theme';
 

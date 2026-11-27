@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Text } from '../text';
 import ACFTBannerAd from '../ACFTBannerAd';
 import { getSession, authFetch } from '../session';
 import { fetchTarget, saveTarget } from '../AcftResults/target';

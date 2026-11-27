@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Image, Text, View, KeyboardAvoidingView, Platform, Keyboard, TouchableOpacity, Alert, ScrollView, StyleSheet, Share } from 'react-native';
+import { Image, View, KeyboardAvoidingView, Platform, Keyboard, TouchableOpacity, Alert, ScrollView, StyleSheet, Share } from 'react-native';
+import { Text } from '../text';
 import ACFTBannerAd from "../ACFTBannerAd";
 import * as StoreReview from 'expo-store-review';
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';

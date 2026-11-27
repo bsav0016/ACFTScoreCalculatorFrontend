@@ -1,4 +1,5 @@
-import { Text, SafeAreaView, ScrollView, Linking } from 'react-native';
+import { SafeAreaView, ScrollView, Linking } from 'react-native';
+import { Text } from '../text';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import ACFTBannerAd from '../ACFTBannerAd';
