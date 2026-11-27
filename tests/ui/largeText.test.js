@@ -103,3 +103,30 @@ describe('layout at large text', () => {
     }
   });
 });
+
+describe('segmented control and total bar at large text', () => {
+  const { Segmented, TotalBar } = require('../../components/ui');
+  const flat = (element) => StyleSheet.flatten(element.props.style) || {};
+  const options = [{ value: true, label: 'Male / Combat MOS' }, { value: false, label: 'Female non-combat' }];
+
+  test('the segments sit side by side normally and stack at 2x', async () => {
+    await render(<Segmented options={options} value={true} onChange={() => {}} />);
+    expect(flat(screen.getByRole('button', { name: 'Male / Combat MOS' }).parent).flexDirection).toBe('row');
+    await screen.unmount();
+    await setFontScale(2);
+    await render(<Segmented options={options} value={true} onChange={() => {}} />);
+    expect(flat(screen.getByRole('button', { name: 'Male / Combat MOS' }).parent).flexDirection).toBe('column');
+  });
+
+  test('the total and its buttons share a line normally and stack at 2x, with every button kept', async () => {
+    const bar = <TotalBar total={350} max={500} canSave canShare onSave={() => {}} onClear={() => {}} onShare={() => {}} />;
+    await render(bar);
+    const normal = flat(screen.getByText('TOTAL SCORE').parent.parent).flexDirection;
+    await screen.unmount();
+    await setFontScale(2);
+    await render(bar);
+    expect(normal).toBe('row');
+    expect(flat(screen.getByText('TOTAL SCORE').parent.parent).flexDirection).toBe('column');
+    for (const name of ['Clear', 'Share', 'Save score']) expect(screen.getByRole('button', { name })).toBeOnTheScreen();
+  });
+});

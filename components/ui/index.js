@@ -143,8 +143,9 @@ export function LabeledInput({ label, inputRef, style, onFocus, ...inputProps })
 
 // Equal-width pill selector. options: [{ value, label }].
 export function Segmented({ options, value, onChange, compact }) {
+  const large = useLargeText();
   return (
-    <View style={styles.segmented}>
+    <View style={[styles.segmented, large && styles.segmentedLarge]}>
       {options.map(option => {
         const selected = option.value === value;
         return (
@@ -300,6 +301,7 @@ export function EventRow({ field }) {
 
 // Sticky footer with the running total and the Save / Clear actions.
 export function TotalBar({ total, max, canSave, onSave, onClear, canShare, onShare, compact }) {
+  const large = useLargeText();
   if (compact) {
     // Keyboard is up: keep the running total visible but give the space back to the form.
     return (
@@ -313,7 +315,7 @@ export function TotalBar({ total, max, canSave, onSave, onClear, canShare, onSha
     );
   }
   return (
-    <View style={styles.totalBar}>
+    <View style={[styles.totalBar, large && styles.totalBarLarge]}>
       <View>
         <Text style={font.caption}>TOTAL SCORE</Text>
         <Text style={styles.totalValue}>
@@ -321,7 +323,7 @@ export function TotalBar({ total, max, canSave, onSave, onClear, canShare, onSha
           <Text style={styles.totalMax}> / {max}</Text>
         </Text>
       </View>
-      <View style={styles.totalActions}>
+      <View style={[styles.totalActions, large && styles.totalActionsLarge]}>
         <Button variant="text" title="Clear" onPress={onClear} />
         {canShare && <Button variant="text" title="Share" onPress={onShare} />}
         {canSave && <Button title="Save score" onPress={onSave} style={styles.saveButton} />}
@@ -409,6 +411,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 44,
   },
+  segmentedLarge: { flexDirection: 'column' },
   segmentSelected: { backgroundColor: colors.gold },
   segmentText: { color: colors.textMuted, fontSize: 15, fontWeight: '500', textAlign: 'center' },
   segmentTextSelected: { color: colors.onGold, fontWeight: '700' },
@@ -470,6 +473,9 @@ const styles = StyleSheet.create({
   totalBarCompact: { paddingVertical: 6 },
   totalValueCompact: { color: colors.gold, fontSize: 20, fontWeight: '800' },
   totalActions: { flexDirection: 'row', alignItems: 'center' },
+  // At large text the total and its buttons do not fit on one line: buttons wrap under the total.
+  totalBarLarge: { flexDirection: 'column', alignItems: 'stretch' },
+  totalActionsLarge: { flexWrap: 'wrap', justifyContent: 'flex-end' },
   saveButton: { marginLeft: space.sm, paddingHorizontal: 18, paddingVertical: 10, minHeight: 44 },
   menuItem: {
     flexDirection: 'row',
