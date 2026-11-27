@@ -26,7 +26,7 @@ export default function About() {
     <SafeAreaView style={{flex: 1, backgroundColor: colors.bg}}>
       <ScrollView contentContainerStyle={{padding: space.lg}}>
         <Card>
-          <Text style={font.title}>Thank you for choosing my app!</Text>
+          <Text style={font.title} accessibilityRole="header">Thank you for choosing my app!</Text>
           <Text style={[font.body, {marginTop: space.md, color: colors.textMuted, lineHeight: 22}]}>
             If you have any feedback, comments, or suggestions please reach out to me at the email below, and I will do my best to get back to you ASAP.
           </Text>

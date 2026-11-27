@@ -140,7 +140,7 @@ export default function PercentileCard({ scores, age, maleOrCombat }) {
               const on = groupBy.includes(chip.key);
               return (
                 <TouchableOpacity key={chip.key} onPress={() => toggleGroup(chip.key)}
-                  accessibilityState={{ selected: on }}
+                  accessibilityRole="button" accessibilityState={{ selected: on }}
                   style={[styles.chip, on && styles.chipOn]}>
                   <Text style={[styles.chipText, on && styles.chipTextOn]}>{chip.label}</Text>
                 </TouchableOpacity>

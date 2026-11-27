@@ -411,13 +411,13 @@ const AFTCalculator = (props) => {
       imageStyle: calculatorStyles.aftDeadliftScoresImage, score: deadliftScore
     },
     {
-      key: 'pushups', text: 'T-Push Ups', value: pushups, ref: pushupRef, ph: '0-99',
+      key: 'pushups', text: 'T-Push Ups', spoken: 'T push-ups', value: pushups, ref: pushupRef, ph: '0-99',
       onCT: setPushups, onSE: () => sdcMinRef.current.focus(), bos: false, visible: visible3,
       onPress: (isVisible) => {setVisible3(isVisible)}, imagePath: require('../../assets/AFTScoreCharts/AFTPushupScores.png'),
       imageStyle: calculatorStyles.aftPushUpScoresImage, score: pushupScore
     },
     {
-      key: 'sdcMin', text: 'SDC', value: sdcMin, ref: sdcMinRef, ph: 'Minutes',
+      key: 'sdcMin', text: 'SDC', spoken: 'Sprint drag carry', value: sdcMin, ref: sdcMinRef, ph: 'Minutes',
       onCT: setSDCMin, onSE: () => sdcSecRef.current.focus(), bos: false, visible: visible4,
       onPress: (isVisible) => {setVisible4(isVisible)}, imagePath: require('../../assets/AFTScoreCharts/AFTSDCScores.png'),
       imageStyle: calculatorStyles.aftSdcScoresImage, score: sdcScore, key2: 'sdcSec', value2: sdcSec,
@@ -431,7 +431,7 @@ const AFTCalculator = (props) => {
       ref2: plankSecRef, onCT2: setPlankSec, onSE2: () => runMinRef.current.focus(), bos2: false
     },
     {
-      key: 'runMin', text: '2MR', value: runMin, ref: runMinRef, ph: 'Minutes',
+      key: 'runMin', text: '2MR', spoken: 'Two mile run', value: runMin, ref: runMinRef, ph: 'Minutes',
       onCT: setRunMin, onSE: () => runSecRef.current.focus(), bos: false, visible: visible6,
       onPress: (isVisible) => {setVisible6(isVisible)}, imagePath: require('../../assets/AFTScoreCharts/AFTRunScores.png'),
       imageStyle: calculatorStyles.aftMRScoresImage, score: runScore, key2: 'runSec', value2: runSec,
@@ -507,7 +507,7 @@ const AFTCalculator = (props) => {
                 onChange={setIsCombatMOS}
               />
             </View>
-            <TouchableOpacity onPress={() => setInfoModalVisible(true)} accessibilityLabel="Which MOS count as combat?" style={{padding: space.sm}}>
+            <TouchableOpacity onPress={() => setInfoModalVisible(true)} accessibilityRole="button" accessibilityLabel="Which MOS count as combat?" style={{padding: space.sm}}>
               <Text style={{color: colors.gold, fontSize: 20, fontWeight: '700'}}>ⓘ</Text>
             </TouchableOpacity>
           </View>
@@ -523,10 +523,10 @@ const AFTCalculator = (props) => {
           {fields.map(field => <EventRow key={field.key} field={field}/>)}
           <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: space.sm, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border}}>
             <Text style={[font.caption, {flex: 1}]} numberOfLines={1}>Tap a score for its chart</Text>
-            <TouchableOpacity onPress={openPlanner} style={{padding: 4, marginLeft: space.sm}}>
+            <TouchableOpacity onPress={openPlanner} accessibilityRole="button" style={{padding: 4, marginLeft: space.sm}}>
               <Text style={{color: colors.gold, fontSize: 13, fontWeight: '700'}}>Goal planner</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setVisible(true)} style={{padding: 4, marginLeft: space.sm}}>
+            <TouchableOpacity onPress={() => setVisible(true)} accessibilityRole="button" accessibilityLabel="Alternate events" style={{padding: 4, marginLeft: space.sm}}>
               <Text style={{color: colors.gold, fontSize: 13, fontWeight: '500'}}>Alt. events</Text>
             </TouchableOpacity>
           </View>

@@ -14,7 +14,7 @@ describe('component test harness', () => {
   test('a Field renders its label and reports typing', async () => {
     const onChangeText = jest.fn();
     await render(<Field label="Age" value="" onChangeText={onChangeText} placeholder="Years" />);
-    expect(screen.getByText('Age')).toBeTruthy();
+    expect(screen.getByLabelText('Age')).toBeTruthy();
     await fireEvent.changeText(screen.getByPlaceholderText('Years'), '29');
     expect(onChangeText).toHaveBeenCalledWith('29');
   });

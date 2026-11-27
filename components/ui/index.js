@@ -11,6 +11,7 @@ import { colors, font, numericKeyboard, radius, scoreColor, space } from '../the
 export const ScrollIntoViewContext = createContext(null);
 const CardLayoutContext = createContext(null);
 const RowFocusContext = createContext(null);
+const RowLabelContext = createContext(undefined);
 
 export function useKeepFocusedVisible() {
   const scrollRef = useRef();
@@ -82,7 +83,7 @@ export function Card({ style, children, onLayout }) {
 }
 
 export function SectionLabel({ children, style }) {
-  return <Text style={[styles.sectionLabel, style]}>{children}</Text>;
+  return <Text accessibilityRole="header" style={[styles.sectionLabel, style]}>{children}</Text>;
 }
 
 // A labelled numeric input on one row: label on the left, input on the right.
@@ -92,9 +93,11 @@ export function Field({ label, value, onChangeText, placeholder, keyboardType = 
   return (
     <View onLayout={focus.onLayout}>
       <View style={styles.fieldRow}>
-        <Text style={styles.fieldLabel}>{label}</Text>
+        <Text style={styles.fieldLabel} importantForAccessibility="no" accessibilityElementsHidden>{label}</Text>
         <TextInput
           ref={inputRef}
+          accessibilityLabel={label}
+          accessibilityHint={error || undefined}
           onFocus={focus.onFocus}
           value={value}
           onChangeText={onChangeText}
@@ -109,7 +112,7 @@ export function Field({ label, value, onChangeText, placeholder, keyboardType = 
           style={[styles.input, styles.fieldInput, error && { borderColor: colors.danger }]}
         />
       </View>
-      {error ? <Text style={[font.caption, { color: colors.danger, marginTop: 4 }]}>{error}</Text> : null}
+      {error ? <Text style={[font.caption, { color: colors.danger, marginTop: 4 }]} accessibilityRole="alert">{error}</Text> : null}
     </View>
   );
 }
@@ -119,9 +122,10 @@ export function LabeledInput({ label, inputRef, style, onFocus, ...inputProps })
   const focus = useFocusReporter();
   return (
     <View style={{ marginTop: space.md }} onLayout={focus.onLayout}>
-      <Text style={font.caption}>{label}</Text>
+      <Text style={font.caption} importantForAccessibility="no" accessibilityElementsHidden>{label}</Text>
       <TextInput
         ref={inputRef}
+        accessibilityLabel={label}
         placeholderTextColor={colors.textMuted}
         blurOnSubmit={inputProps.returnKeyType !== 'next'}
         style={[styles.input, { marginTop: 6 }, style]}
@@ -182,18 +186,23 @@ export function ChartModal({ visible, onClose, children }) {
 }
 
 // One compact line inside a card: label on the left, input(s) in the middle, optional badge on the right.
-export function InputRow({ label, onLabelPress, right, children }) {
+export function InputRow({ label, spokenLabel, onLabelPress, right, children }) {
   const focus = useFocusReporter();
 
   return (
     <RowFocusContext.Provider value={focus.onFocus}>
-      <View style={styles.inputRow} onLayout={focus.onLayout}>
-        <TouchableOpacity disabled={!onLabelPress} onPress={onLabelPress} style={styles.rowLabelWrap}>
-          <Text style={styles.rowLabel} numberOfLines={1}>{label}</Text>
-        </TouchableOpacity>
-        <View style={styles.rowInputs}>{children}</View>
-        {right === undefined ? <View style={styles.badgeSpacer} /> : right}
-      </View>
+      <RowLabelContext.Provider value={spokenLabel || label}>
+        <View style={styles.inputRow} onLayout={focus.onLayout}>
+          {/* With a chart behind the label, the score badge is the control a screen reader offers (same action). */}
+          {/* eslint-disable-next-line a11y/touchable-has-role -- hidden from screen readers on purpose */}
+          <TouchableOpacity disabled={!onLabelPress} onPress={onLabelPress} style={styles.rowLabelWrap}
+            accessible={false} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+            <Text style={styles.rowLabel} numberOfLines={1}>{label}</Text>
+          </TouchableOpacity>
+          <View style={styles.rowInputs}>{children}</View>
+          {right === undefined ? <View style={styles.badgeSpacer} /> : right}
+        </View>
+      </RowLabelContext.Provider>
     </RowFocusContext.Provider>
   );
 }
@@ -201,8 +210,10 @@ export function InputRow({ label, onLabelPress, right, children }) {
 // Numeric text input sized for InputRow.
 export function CompactInput(props) {
   const onRowFocus = useContext(RowFocusContext);
+  const rowLabel = useContext(RowLabelContext);
   return (
     <TextInput
+      accessibilityLabel={rowLabel}
       placeholderTextColor={colors.textMuted}
       keyboardType={numericKeyboard}
       returnKeyType="next"
@@ -223,13 +234,16 @@ export function EventRow({ field }) {
   const entered = field.value !== '' || (hasSecond && field.value2 !== '');
   const openChart = () => field.onPress(true);
   const name = field.text.trim();
+  const spoken = field.spoken || name;
+  const scoreText = entered ? `, ${field.score} points` : '';
 
   return (
     <InputRow
       label={name}
+      spokenLabel={spoken}
       onLabelPress={openChart}
       right={
-        <TouchableOpacity onPress={openChart} accessibilityLabel={`${name} score chart`}>
+        <TouchableOpacity onPress={openChart} accessibilityRole="button" accessibilityLabel={`${spoken} score chart${scoreText}`}>
           <ScoreBadge score={field.score} entered={entered} small />
         </TouchableOpacity>
       }
@@ -241,6 +255,7 @@ export function EventRow({ field }) {
         onSubmitEditing={field.onSE}
         placeholder={field.ph}
         blurOnSubmit={false}
+        accessibilityLabel={hasSecond ? `${spoken} minutes` : spoken}
       />
       {hasSecond &&
         <>
@@ -251,6 +266,7 @@ export function EventRow({ field }) {
             onChangeText={field.onCT2}
             onSubmitEditing={field.onSE2}
             placeholder="Seconds"
+            accessibilityLabel={`${spoken} seconds`}
             returnKeyType={field.bos2 ? 'done' : 'next'}
             blurOnSubmit={field.bos2}
           />

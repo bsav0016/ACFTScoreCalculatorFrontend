@@ -23,6 +23,7 @@ function InfoRow({ label, value, editing, onChangeText, onEdit, onUndo, keyboard
       {editing ?
         <View style={styles.editRow}>
           <TextInput
+            accessibilityLabel={label}
             value={value}
             onChangeText={onChangeText}
             keyboardType={keyboardType}
@@ -31,15 +32,17 @@ function InfoRow({ label, value, editing, onChangeText, onEdit, onUndo, keyboard
             placeholderTextColor={colors.textMuted}
             style={[inputStyle, styles.editInput]}
           />
-          <TouchableOpacity onPress={onEdit} style={styles.iconButton} accessibilityLabel={`Save ${label}`}>
+          <TouchableOpacity onPress={onEdit} style={styles.iconButton} accessibilityRole="button" accessibilityLabel={`Save ${label}`}>
             <FontAwesomeIcon icon={faFloppyDisk} color={colors.gold} size={22}/>
           </TouchableOpacity>
-          <TouchableOpacity onPress={onUndo} style={styles.iconButton} accessibilityLabel={`Cancel editing ${label}`}>
+          <TouchableOpacity onPress={onUndo} style={styles.iconButton} accessibilityRole="button" accessibilityLabel={`Cancel editing ${label}`}>
             <FontAwesomeIcon icon={faRotateLeft} color={colors.textMuted} size={20}/>
           </TouchableOpacity>
         </View>
         :
-        <TouchableOpacity onPress={onEdit} disabled={!onEdit} style={styles.valueRow}>
+        <TouchableOpacity onPress={onEdit} disabled={!onEdit} style={styles.valueRow}
+          accessibilityRole={onEdit ? 'button' : undefined} accessibilityLabel={`${label}: ${value}`}
+          accessibilityHint={onEdit ? 'Double tap to edit' : undefined}>
           <Text style={styles.infoValue} numberOfLines={1}>{value}</Text>
           {onEdit && <FontAwesomeIcon icon={faPenToSquare} color={colors.textMuted} size={16} style={{marginLeft: space.sm}}/>}
         </TouchableOpacity>
@@ -437,7 +440,7 @@ export default function Profile(props) {
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{initials}</Text>
           </View>
-          <Text style={font.title}>{`${firstName} ${lastName}`.trim() || username}</Text>
+          <Text style={font.title} accessibilityRole="header">{`${firstName} ${lastName}`.trim() || username}</Text>
           <Text style={font.caption}>@{username}</Text>
         </View>
 
@@ -452,7 +455,7 @@ export default function Profile(props) {
 
         <Card style={styles.scoresCard}>
           <View>
-            <Text style={font.heading}>Saved scores</Text>
+            <Text style={font.heading} accessibilityRole="header">Saved scores</Text>
             <Text style={font.caption}>
               {(acftResults === undefined || acftResults.length === 0) ? 'None yet' : `${acftResults.length} saved`}
             </Text>

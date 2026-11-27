@@ -39,7 +39,7 @@ export default function DatePickerModal({ visible, value, error, onCancel, onCon
     <Modal transparent visible={visible} animationType="fade" onRequestClose={onCancel}>
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
-          <Text style={font.heading}>Test date</Text>
+          <Text style={font.heading} accessibilityRole="header">Test date</Text>
           <Text style={[font.caption, { marginBottom: space.md }]}>{formatPickedDate(picked)}</Text>
 
           <View style={styles.monthRow}>

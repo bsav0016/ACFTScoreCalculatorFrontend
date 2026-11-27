@@ -6,6 +6,7 @@
 // warnings are cleared.
 const { defineConfig, globalIgnores } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
+const a11y = require('./scripts/eslint-rule-a11y');
 
 module.exports = defineConfig([
   expoConfig,
@@ -18,6 +19,15 @@ module.exports = defineConfig([
       'react-hooks/exhaustive-deps': 'warn',
       'react/display-name': 'warn',
       'no-var': 'warn',
+    },
+  },
+  {
+    // Screen-reader support: see scripts/eslint-rule-a11y.js. Errors, because a control without a name or role is unusable.
+    files: ['components/**/*.js', 'App.js'],
+    plugins: { a11y },
+    rules: {
+      'a11y/input-has-name': 'error',
+      'a11y/touchable-has-role': 'error',
     },
   },
   {
