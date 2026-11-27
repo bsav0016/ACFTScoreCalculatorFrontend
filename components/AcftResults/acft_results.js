@@ -1,4 +1,5 @@
-import { Text, View, SafeAreaView, FlatList, StyleSheet, Alert } from 'react-native';
+import { View, SafeAreaView, FlatList, StyleSheet, Alert } from 'react-native';
+import { Text } from '../text';
 import { useState, useEffect, useMemo } from 'react';
 import { authFetch, getSession } from '../session';
 import ACFTBannerAd from '../ACFTBannerAd';

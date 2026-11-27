@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Text } from '../text';
 import Button from '../Button';
 import { colors, font, radius, space } from '../theme';
 import { MIN_YEAR } from './saveScore';

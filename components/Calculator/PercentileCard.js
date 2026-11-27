@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text } from '../text';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { backendUrl } from '../constants';
 import { reportOnce } from '../errorReporting';

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef } from 'react';
-import { Image, Keyboard, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, Keyboard, Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Text, TextInput, useLargeText } from '../text';
 import ReactNativeZoomableView from '@openspacelabs/react-native-zoomable-view/src/ReactNativeZoomableView';
 import Button from '../Button';
 import { colors, font, numericKeyboard, radius, scoreColor, space } from '../theme';
@@ -90,9 +91,10 @@ export function SectionLabel({ children, style }) {
 export function Field({ label, value, onChangeText, placeholder, keyboardType = numericKeyboard, inputRef,
   onSubmitEditing, returnKeyType = 'next', secureTextEntry, autoCapitalize, error }) {
   const focus = useFocusReporter();
+  const large = useLargeText();
   return (
     <View onLayout={focus.onLayout}>
-      <View style={styles.fieldRow}>
+      <View style={[styles.fieldRow, large && styles.fieldRowLarge]}>
         <Text style={styles.fieldLabel} importantForAccessibility="no" accessibilityElementsHidden>{label}</Text>
         <TextInput
           ref={inputRef}
@@ -109,7 +111,7 @@ export function Field({ label, value, onChangeText, placeholder, keyboardType = 
           onSubmitEditing={onSubmitEditing}
           secureTextEntry={secureTextEntry}
           autoCapitalize={autoCapitalize}
-          style={[styles.input, styles.fieldInput, error && { borderColor: colors.danger }]}
+          style={[styles.input, large ? styles.fieldInputLarge : styles.fieldInput, error && { borderColor: colors.danger }]}
         />
       </View>
       {error ? <Text style={[font.caption, { color: colors.danger, marginTop: 4 }]} accessibilityRole="alert">{error}</Text> : null}
@@ -141,8 +143,9 @@ export function LabeledInput({ label, inputRef, style, onFocus, ...inputProps })
 
 // Equal-width pill selector. options: [{ value, label }].
 export function Segmented({ options, value, onChange, compact }) {
+  const large = useLargeText();
   return (
-    <View style={styles.segmented}>
+    <View style={[styles.segmented, large && styles.segmentedLarge]}>
       {options.map(option => {
         const selected = option.value === value;
         return (
@@ -188,19 +191,32 @@ export function ChartModal({ visible, onClose, children }) {
 // One compact line inside a card: label on the left, input(s) in the middle, optional badge on the right.
 export function InputRow({ label, spokenLabel, onLabelPress, right, children }) {
   const focus = useFocusReporter();
+  const large = useLargeText();
 
   return (
     <RowFocusContext.Provider value={focus.onFocus}>
       <RowLabelContext.Provider value={spokenLabel || label}>
-        <View style={styles.inputRow} onLayout={focus.onLayout}>
+        <View style={[styles.inputRow, large && styles.inputRowLarge]} onLayout={focus.onLayout}>
           {/* With a chart behind the label, the score badge is the control a screen reader offers (same action). */}
-          {/* eslint-disable-next-line a11y/touchable-has-role -- hidden from screen readers on purpose */}
-          <TouchableOpacity disabled={!onLabelPress} onPress={onLabelPress} style={styles.rowLabelWrap}
-            accessible={false} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-            <Text style={styles.rowLabel} numberOfLines={1}>{label}</Text>
-          </TouchableOpacity>
-          <View style={styles.rowInputs}>{children}</View>
-          {right === undefined ? <View style={styles.badgeSpacer} /> : right}
+          {large ?
+            <>
+              <View style={styles.rowTop}>
+                <Text style={[styles.rowLabel, styles.rowLabelLarge]} importantForAccessibility="no" accessibilityElementsHidden>{label}</Text>
+                {right}
+              </View>
+              <View style={[styles.rowInputs, styles.rowInputsLarge]}>{children}</View>
+            </>
+            :
+            <>
+              {/* eslint-disable-next-line a11y/touchable-has-role -- hidden from screen readers on purpose */}
+              <TouchableOpacity disabled={!onLabelPress} onPress={onLabelPress} style={styles.rowLabelWrap}
+                accessible={false} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+                <Text style={styles.rowLabel} numberOfLines={1}>{label}</Text>
+              </TouchableOpacity>
+              <View style={styles.rowInputs}>{children}</View>
+              {right === undefined ? <View style={styles.badgeSpacer} /> : right}
+            </>
+          }
         </View>
       </RowLabelContext.Provider>
     </RowFocusContext.Provider>
@@ -285,6 +301,7 @@ export function EventRow({ field }) {
 
 // Sticky footer with the running total and the Save / Clear actions.
 export function TotalBar({ total, max, canSave, onSave, onClear, canShare, onShare, compact }) {
+  const large = useLargeText();
   if (compact) {
     // Keyboard is up: keep the running total visible but give the space back to the form.
     return (
@@ -298,7 +315,7 @@ export function TotalBar({ total, max, canSave, onSave, onClear, canShare, onSha
     );
   }
   return (
-    <View style={styles.totalBar}>
+    <View style={[styles.totalBar, large && styles.totalBarLarge]}>
       <View>
         <Text style={font.caption}>TOTAL SCORE</Text>
         <Text style={styles.totalValue}>
@@ -306,7 +323,7 @@ export function TotalBar({ total, max, canSave, onSave, onClear, canShare, onSha
           <Text style={styles.totalMax}> / {max}</Text>
         </Text>
       </View>
-      <View style={styles.totalActions}>
+      <View style={[styles.totalActions, large && styles.totalActionsLarge]}>
         <Button variant="text" title="Clear" onPress={onClear} />
         {canShare && <Button variant="text" title="Share" onPress={onShare} />}
         {canSave && <Button title="Save score" onPress={onSave} style={styles.saveButton} />}
@@ -376,7 +393,9 @@ const styles = StyleSheet.create({
   },
   fieldLabel: { ...font.body, flex: 1 },
   input: { ...inputStyle, textAlign: 'left' },
+  fieldRowLarge: { flexDirection: 'column', alignItems: 'stretch' },
   fieldInput: { width: 120, textAlign: 'right' },
+  fieldInputLarge: { alignSelf: 'stretch', marginTop: 6 },
   segmented: {
     flexDirection: 'row',
     backgroundColor: colors.surfaceAlt,
@@ -392,6 +411,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 44,
   },
+  segmentedLarge: { flexDirection: 'column' },
   segmentSelected: { backgroundColor: colors.gold },
   segmentText: { color: colors.textMuted, fontSize: 15, fontWeight: '500', textAlign: 'center' },
   segmentTextSelected: { color: colors.onGold, fontWeight: '700' },
@@ -424,6 +444,10 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
   },
+  inputRowLarge: { flexDirection: 'column', alignItems: 'stretch', paddingVertical: 10 },
+  rowTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
+  rowLabelLarge: { flex: 1, marginRight: space.sm },
+  rowInputsLarge: { flex: 0, marginRight: 0 },
   rowLabelWrap: { width: 84, justifyContent: 'center' },
   rowLabel: { ...font.body, fontSize: 15, fontWeight: '600' },
   rowInputs: { flex: 1, flexDirection: 'row', alignItems: 'center', minWidth: 0, marginRight: space.sm },
@@ -449,6 +473,9 @@ const styles = StyleSheet.create({
   totalBarCompact: { paddingVertical: 6 },
   totalValueCompact: { color: colors.gold, fontSize: 20, fontWeight: '800' },
   totalActions: { flexDirection: 'row', alignItems: 'center' },
+  // At large text the total and its buttons do not fit on one line: buttons wrap under the total.
+  totalBarLarge: { flexDirection: 'column', alignItems: 'stretch' },
+  totalActionsLarge: { flexWrap: 'wrap', justifyContent: 'flex-end' },
   saveButton: { marginLeft: space.sm, paddingHorizontal: 18, paddingVertical: 10, minHeight: 44 },
   menuItem: {
     flexDirection: 'row',

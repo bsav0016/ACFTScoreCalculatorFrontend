@@ -31,6 +31,20 @@ module.exports = defineConfig([
     },
   },
   {
+    // Text and TextInput come from components/text.js, which caps the phone's text-size scaling at 2x.
+    files: ['components/**/*.js', 'App.js'],
+    ignores: ['components/text.js'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        paths: [{
+          name: 'react-native',
+          importNames: ['Text', 'TextInput'],
+          message: "Import Text and TextInput from components/text.js (it caps text scaling), not from 'react-native'.",
+        }],
+      }],
+    },
+  },
+  {
     files: ['scripts/**/*.js'],
     languageOptions: {
       globals: { require: 'readonly', module: 'readonly', process: 'readonly', console: 'readonly', __dirname: 'readonly' },

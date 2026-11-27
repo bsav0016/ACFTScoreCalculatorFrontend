@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Text, ActivityIndicator, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView } from 'react-native';
+import { Text } from '../text';
 import { getSession, setSession } from "../session";
 import { newPasswordProblem, serverPasswordMessage } from "../passwordRules";
 import ACFTBannerAd from '../ACFTBannerAd';

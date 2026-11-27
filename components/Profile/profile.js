@@ -1,4 +1,5 @@
-import { Text, View, TextInput, Alert, TouchableOpacity, SafeAreaView, ScrollView, StyleSheet } from 'react-native';
+import { View, Alert, TouchableOpacity, SafeAreaView, ScrollView, StyleSheet } from 'react-native';
+import { Text, TextInput } from '../text';
 import { useState, useEffect } from 'react';
 import { authFetch, changePassword, clearSession, getSession, signOut as endSession } from '../session';
 import { newPasswordProblem, serverPasswordMessage } from '../passwordRules';

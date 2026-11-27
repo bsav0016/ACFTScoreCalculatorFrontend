@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { SafeAreaView, View, Text, ScrollView, Platform, KeyboardAvoidingView, Keyboard, StyleSheet } from "react-native";
+import { SafeAreaView, View, ScrollView, Platform, KeyboardAvoidingView, Keyboard, StyleSheet } from 'react-native';
+import { Text } from '../text';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import ACFTBannerAd from "../ACFTBannerAd";

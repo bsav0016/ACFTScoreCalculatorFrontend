@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Platform, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Animated, Platform, StyleSheet, View } from 'react-native';
+import { Text } from '../text';
 import { colors, font, radius, space } from '../theme';
 
 // A short message that slides in at the top of the screen, stays a few seconds and fades out. It is a plain view, so it

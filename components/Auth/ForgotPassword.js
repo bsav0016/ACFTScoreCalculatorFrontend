@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Text, ActivityIndicator, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView } from 'react-native';
+import { Text } from '../text';
 import ACFTBannerAd from '../ACFTBannerAd';
 import Button from '../Button';
 import { Card, LabeledInput, ScrollIntoViewContext, useKeepFocusedVisible } from '../ui';
