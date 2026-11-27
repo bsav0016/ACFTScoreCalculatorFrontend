@@ -128,7 +128,7 @@ export default function PercentileCard({ scores, age, maleOrCombat }) {
         accessibilityState={{ expanded }} style={styles.summaryRow}>
         <View style={{flex: 1}}>
           <Text style={styles.summaryLabel}>HOW YOU RANK</Text>
-          <Text style={overall && overall.percentile !== null ? styles.summaryValue : font.body}>{summary}</Text>
+          <Text accessibilityLiveRegion="polite" style={overall && overall.percentile !== null ? styles.summaryValue : font.body}>{summary}</Text>
         </View>
         <Text style={styles.chevron}>{expanded ? '▴' : '▾'}</Text>
       </TouchableOpacity>
