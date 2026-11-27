@@ -15,6 +15,7 @@ Scoring the Army Fitness Test means looking up each event's result in tables tha
 - **Waist-to-Height Ratio** – body-composition screening
 - **Accounts and saved results** – sign in to save scores and view them later
 - **Share** – once all five events are in, send the total and event scores through the phone's share sheet (plain text and a store link, no personal detail)
+- **Accessible** – inputs and buttons are named for VoiceOver and TalkBack, scores are announced as you type, and text follows the phone's size setting up to 2x (see [docs/accessibility.md](docs/accessibility.md))
 - Runs on a dark theme; on tablets the screens stay in a readable 640px column
 
 The home screen states the standards are "Current as of 7 July 2026".
@@ -51,7 +52,7 @@ The calculators work without a server. Sign-in, saved results and percentiles ca
 ## Tests and checks
 
 ```bash
-npm test          # scoring tests (Jest, no network)
+npm test          # scoring tests and component tests (Jest, no network)
 npm run lint      # ESLint with the Expo config
 npm run build:check   # bundles the JavaScript for iOS and Android
 ```
@@ -59,6 +60,8 @@ npm run build:check   # bundles the JavaScript for iOS and Android
 The same three run on every pull request (`.github/workflows/ci.yml`). They do not compile native code, so a green check does not prove an iOS or Android build will succeed; that is still done with EAS at release time.
 
 The scoring tests are in `tests/`: golden values read by hand from the table cells at each threshold and one step either side, an independent reference scorer checked against every table, column and boundary, structural checks on the tables themselves, a cell-by-cell comparison of all five tables with the Army's published chart (`tests/fixtures/aft-score-tables-250601.txt`, effective 1 June 2025), and the goal planner's reverse lookup. They never call the backend, and one test checks that scoring makes no network request.
+
+The component tests (`tests/ui/`, React Native Testing Library) render the calculator and goal planner and check that every input and button has a name, results are announced, and text is capped and rows stack at large text sizes. A lint rule fails new unlabelled controls. See [docs/accessibility.md](docs/accessibility.md), which also has the VoiceOver / TalkBack checklist.
 
 ## How the scoring works
 
